@@ -1,0 +1,19 @@
+{
+  "world": {
+    "chunkWidth": 16,
+    "chunkHeight": 64,
+    "renderDistanceInChunks": 4,
+    "defaultSeed": 20261107
+  },
+  "player": {
+    "maxHealth": 20,
+    "maxHunger": 20,
+    "reachDistance": 5.0,
+    "walkSpeed": 4.5,
+    "jumpForce": 6.0
+  },
+  "resourcePack": {
+    "activePack": "default",
+    "tileSize": 16
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Minecraft.Infrastructure",
+  "rootNamespace": "Minecraft.Infrastructure",
+  "references": [
+    "Minecraft.Domain",
+    "Minecraft.Application"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
