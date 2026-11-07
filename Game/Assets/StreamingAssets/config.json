@@ -13,7 +13,11 @@
     "jumpForce": 6.0
   },
   "resourcePack": {
-    "activePack": "default",
-    "tileSize": 16
+    "activePack": "OptimumRealism_64x",
+    "availablePacks": [
+      "default",
+      "OptimumRealism_64x"
+    ],
+    "tileSize": 64
   }
 }

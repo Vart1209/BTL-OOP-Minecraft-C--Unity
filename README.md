@@ -1,6 +1,6 @@
 # Minecraft Voxel Survival – Bài Tập Lớn Lập Trình Hướng Đối Tượng (OOP)
 
-Dự án game thế giới voxel kiểu Minecraft (Survival + Creative) xây dựng bằng **C# trên Unity 6.3 LTS (`6000.3.28f1`)**, thiết kế theo kiến trúc phân tầng (Domain / Application / Infrastructure / Presentation) bám sát barem chấm điểm nhóm 2 người.
+Dự án game thế giới voxel kiểu Minecraft (Survival + Creative) xây dựng bằng **C# trên Unity 6 (`6000.6.8f1` - bản mới nhất thống nhất giữa 2 máy)**, thiết kế theo kiến trúc phân tầng (Domain / Application / Infrastructure / Presentation) bám sát barem chấm điểm nhóm 2 người.
 
 ## Tài liệu quan trọng
 - Kế hoạch & Thiết kế Brainstorm: [`docs/brainstorm.md`](file:///Users/admin/Documents/CodeProJect/MINECRAFT/docs/brainstorm.md)
@@ -38,7 +38,7 @@ MINECRAFT/
 
 ### 1. Cài đặt Unity Editor (bắt buộc đúng phiên bản)
 1. Mở **Unity Hub** → tab **Installs** → **Install Editor**.
-2. Chọn bản **Unity 6.3 LTS (`6000.3.28f1`)** (Apple Silicon trên máy Mac M-series).
+2. Chọn bản **Unity 6 (`6000.6.8f1` hoặc bản mới nhất thống nhất giữa 2 máy)** (Apple Silicon trên máy Mac M-series).
 3. Tick chọn thêm module:
    - **Windows Build Support (Mono)** (để máy Mac xuất được file `.exe` cho Windows).
    - **Mac Build Support (Mono / IL2CPP)**.
