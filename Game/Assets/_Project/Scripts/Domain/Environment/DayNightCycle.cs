@@ -43,6 +43,13 @@ namespace Minecraft.Domain.Environment
         /// <summary>Sự kiện phát ra mỗi khung thời gian kèm thời gian chuẩn hóa [0.0, 1.0) để Presentation quay mặt trời.</summary>
         public event Action<float> TimeUpdated;
 
+        /// <summary>Bí danh sự kiện phát ra khi thời gian chuẩn hóa trong ngày thay đổi [0.0, 1.0).</summary>
+        public event Action<float> TimeChanged
+        {
+            add => TimeUpdated += value;
+            remove => TimeUpdated -= value;
+        }
+
         /// <summary>
         /// Khởi tạo chu kỳ Ngày/Đêm.
         /// </summary>
