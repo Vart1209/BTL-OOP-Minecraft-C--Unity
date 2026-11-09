@@ -5,6 +5,67 @@ Tất cả các thay đổi của dự án được AI và các thành viên ghi
 
 ---
 
+## [v0.5.0] - 2026-11-09 22:36 (+07:00) — Hoàn thành Tuần T3: Mốc 2 – MVP Xong (Lưu/Tải JSON, Đọc cấu hình try-catch, Phân cấp Mob đa hình & AI, Vòng lặp Ngày/Đêm, Spawner R11, GameModes & GameBootstrap Pure DI)
+- **Loại cập nhật:** Minor
+- **Phân hệ:** World (A), Survival (B) & Presentation (Shared)
+- **Thêm mới (Added):**
+  - **Phân hệ World & Infrastructure A (Thành viên A):**
+    - `Game/Assets/_Project/Scripts/Domain/GameModes/SurvivalMode.cs` — Thực thi `IGameMode` cho chế độ Sinh tồn, chặn phá Bedrock theo Quy tắc R1.
+    - `Game/Assets/_Project/Scripts/Domain/GameModes/CreativeMode.cs` — Thực thi `IGameMode` cho chế độ Sáng tạo, miễn nhiễm sát thương, phá được Bedrock, không tốn khối theo Quy tắc R12.
+    - `Game/Assets/_Project/Scripts/Domain/GameModes/AdventureMode.cs` — Thực thi `IGameMode` cho chế độ Phiêu lưu (Bài mở rộng luyện thi vấn đáp dòng 12), cấm phá mọi khối địa hình.
+    - `Game/Assets/_Project/Scripts/Domain/Configuration/GameConfig.cs` — Các lớp DTO cấu hình thế giới (`WorldConfig`), người chơi (`PlayerConfig`), gói tài nguyên (`ResourcePackConfig`) và `GameConfigDto.CreateDefault()` dự phòng.
+    - `Game/Assets/_Project/Scripts/Domain/Contracts/IConfigLoader.cs` — Hợp đồng dịch vụ nạp cấu hình trò chơi từ đĩa (DIP).
+    - `Game/Assets/_Project/Scripts/Infrastructure/Config/ConfigLoader.cs` — Cài đặt đọc cấu hình JSON từ file `StreamingAssets/config.json`, bọc `try-catch` an toàn xử lý thiếu file hoặc hỏng JSON, tự động fallback về cấu hình mặc định (Tiêu chí 19).
+    - `Game/Assets/_Project/Scripts/Domain/Persistence/BlockChangeDto.cs` — DTO lưu tọa độ và mã khối bị thay đổi (`X, Y, Z, BlockId`).
+    - `Game/Assets/_Project/Scripts/Domain/Persistence/InventorySlotDto.cs` — DTO lưu dữ liệu một ô túi đồ (`SlotIndex, ItemId, Count`).
+    - `Game/Assets/_Project/Scripts/Domain/Persistence/PlayerSaveDto.cs` — DTO lưu vị trí, máu, đói, chế độ chơi và túi đồ người chơi.
+    - `Game/Assets/_Project/Scripts/Domain/Persistence/WorldSaveDto.cs` — DTO tổng thể chứa toàn bộ dữ liệu file lưu thế giới.
+    - `Game/Assets/_Project/Scripts/Domain/Contracts/IWorldRepository.cs` — Hợp đồng Repository lưu/tải thế giới (Tiêu chí 16).
+    - `Game/Assets/_Project/Scripts/Infrastructure/Persistence/JsonWorldRepository.cs` — Thực thi `IWorldRepository` sử dụng `System.Text.Json`, bọc `try-catch` toàn diện các lỗi I/O ghi đọc đĩa và JSON (Tiêu chí 19).
+    - `Game/Assets/_Project/Scripts/Application/World/WorldPersistenceService.cs` — Dịch vụ điều phối Use Case UC05 (Lưu thế giới) và UC06 (Tải thế giới), chuyển đổi 2 chiều giữa Entity/Aggregate Domain và DTO.
+    - `Game/Assets/_Project/Tests/EditMode/GameModeTests.cs` — 3 Unit Test NUnit kiểm thử quyền hạn và quy tắc của SurvivalMode, CreativeMode, AdventureMode.
+    - `Game/Assets/_Project/Tests/EditMode/ConfigLoaderTests.cs` — 3 Unit Test NUnit kiểm thử đọc file JSON hợp lệ, fallback khi thiếu file và fallback khi file hỏng cú pháp.
+    - `Game/Assets/_Project/Tests/EditMode/PersistenceTests.cs` — 3 Unit Test NUnit kiểm thử tính toàn vẹn DTO, khả năng chịu lỗi file hỏng và khôi phục trọn vẹn thế giới/người chơi.
+  - **Phân hệ Survival, Mobs, Environment & Presentation B (Thành viên B):**
+    - `Game/Assets/_Project/Scripts/Domain/Environment/DayNightPhase.cs` — Enum 4 giai đoạn chu kỳ ngày/đêm (`Day`, `Sunset`, `Night`, `Sunrise`).
+    - `Game/Assets/_Project/Scripts/Domain/Environment/DayNightCycle.cs` — Bộ đếm thời gian chu kỳ tuần hoàn thuần C#, cung cấp Observer event `PhaseChanged` và `TimeUpdated`, cờ `IsNight` phục vụ Quy tắc R11.
+    - `Game/Assets/_Project/Scripts/Domain/Entities/Mobs/MobType.cs` — Enum phân loại giống loài sinh vật (`Zombie`, `Cow`, `Skeleton`).
+    - `Game/Assets/_Project/Scripts/Domain/Entities/Mobs/MobState.cs` — Enum các trạng thái hành vi AI (`Idle`, `Wander`, `Chase`).
+    - `Game/Assets/_Project/Scripts/Domain/Entities/Mobs/Mob.cs` — Lớp trừu tượng (`abstract class`) kế thừa `Entity`, chứa chỉ số sinh vật và phương thức ảo thuần `UpdateAI`.
+    - `Game/Assets/_Project/Scripts/Domain/Entities/Mobs/Zombie.cs` — Mob thù địch cận chiến kế thừa `Mob`, AI tự động áp sát và chuyển trạng thái `Chase` khi người chơi trong bán kính 16 block.
+    - `Game/Assets/_Project/Scripts/Domain/Entities/Mobs/Cow.cs` — Mob hiền lành kế thừa `Mob`, AI chỉ đi dạo tự do (`Wander`), không bao giờ tấn công người chơi.
+    - `Game/Assets/_Project/Scripts/Domain/Entities/Mobs/Skeleton.cs` — Mob thù địch tầm xa (Bài mở rộng luyện thi vấn đáp dòng 12), AI giữ khoảng cách an toàn 6 block để tấn công người chơi.
+    - `Game/Assets/_Project/Scripts/Domain/Contracts/IMobFactory.cs` — Hợp đồng Factory tạo sinh vật theo mẫu thiết kế Factory Pattern.
+    - `Game/Assets/_Project/Scripts/Domain/Entities/Mobs/MobFactory.cs` — Triển khai cụ thể `IMobFactory` tạo đối tượng từ `MobType`.
+    - `Game/Assets/_Project/Scripts/Application/Survival/MobSpawnerService.cs` — Dịch vụ điều phối UC12, thực thi triệt để Quy tắc R11 (chỉ spawn Zombie ban đêm, cách người chơi >= 24 block, giới hạn số lượng tối đa).
+    - `Game/Assets/_Project/Scripts/Application/Survival/MobCombatService.cs` — Dịch vụ điều phối UC08 (Chiến đấu với Mob), kiểm tra cự ly va chạm, xét quyền miễn nhiễm ở Creative (Quy tắc R12) và kích hoạt tử vong khi máu về 0 (Quy tắc R9).
+    - `Game/Assets/_Project/Scripts/Application/Survival/GameModeService.cs` — Dịch vụ điều phối UC11 (Đổi GameMode), chuyển đổi trạng thái người chơi an toàn giữa Survival, Creative, Adventure.
+    - `Game/Assets/_Project/Scripts/Presentation/Environment/DayNightView.cs` — MonoBehaviour kết nối Observer với `DayNightCycle`, điều khiển góc quay Directional Light và cường độ/màu sắc ánh sáng.
+    - `Game/Assets/_Project/Scripts/Presentation/Mobs/MobView.cs` — MonoBehaviour liên kết với thực thể `Mob`, đồng bộ vị trí 3D mượt mà và tự tiêu hủy GameObject khi sinh vật chết.
+    - `Game/Assets/_Project/Scripts/Presentation/Bootstrap/GameBootstrap.cs` — Điểm khởi động Composition Root, kết nối Dependency Injection toàn bộ 4 tầng kiến trúc bằng tay (Pure DI), không dùng Singleton; tích hợp phím tắt F1 (Đổi GameMode), F5 (Lưu nhanh), F9 (Tải nhanh).
+    - `Game/Assets/_Project/Tests/EditMode/DayNightCycleTests.cs` — 3 Unit Test NUnit kiểm thử chu kỳ ngày/đêm và các sự kiện Observer.
+    - `Game/Assets/_Project/Tests/EditMode/MobHierarchyTests.cs` — 5 Unit Test NUnit kiểm thử phân cấp Mob, đa hình AI truy đuổi của Zombie, Cow và Skeleton.
+    - `Game/Assets/_Project/Tests/EditMode/MobSpawnerTests.cs` — 5 Unit Test NUnit kiểm thử MobFactory và các điều kiện sinh quái theo Quy tắc R11.
+    - `Game/Assets/_Project/Tests/EditMode/MobCombatAndGameModeServiceTests.cs` — 5 Unit Test NUnit kiểm thử chiến đấu, miễn nhiễm sát thương ở Creative (R12) và chuyển đổi chế độ chơi (UC11).
+    - `docs/superpowers/plans/2026-11-23-t3-mvp-save-load-mobs.md` — Kế hoạch triển khai chi tiết Tuần T3.
+- **Chỉnh sửa (Changed):**
+  - `Game/Assets/_Project/Scripts/Domain/Entities/Health.cs` — Thêm bí danh `CurrentHealth`, hàm `TakeDamage(amount)` và `SetCurrentHealth(value)` phục vụ khôi phục trạng thái khi nạp save.
+  - `Game/Assets/_Project/Scripts/Domain/Entities/Hunger.cs` — Thêm bí danh `CurrentHunger`, `ConsumeHunger(amount)` và `SetCurrentHunger(value)`.
+  - `Game/Assets/_Project/Scripts/Domain/Items/Inventory.cs` — Thêm phương thức `Clear()` để làm trống túi đồ trước khi nạp lại dữ liệu từ save file.
+  - `Game/Assets/_Project/Scripts/Domain/Items/ItemStack.cs` — Thêm thuộc tính bí danh `Item` trỏ tới `Definition`.
+  - `Game/Assets/_Project/Scripts/Domain/Items/ItemRegistry.cs` — Thêm phương thức `GetItem(id)` trỏ tới `Get(id)`.
+- **Xóa bỏ (Removed):**
+  - Không
+- **Giải thích OOP / AI (dùng khi vấn đáp):**
+  - **State Pattern & Phân quyền tác nhân (Tiêu chí 4, 9, 10, 11):** Thể hiện sự khác biệt rành mạch giữa các tác nhân (Người chơi Survival, Creative, Adventure) thông qua hợp đồng `IGameMode` và các lớp cụ thể `SurvivalMode`, `CreativeMode`, `AdventureMode`, loại bỏ hoàn toàn câu lệnh `if/else` phân tán trên View.
+  - **Factory Pattern (Tiêu chí 9, 10, 11):** `MobFactory` đóng gói khởi tạo các lớp con `Zombie`, `Cow`, `Skeleton` từ `MobType`, giúp `MobSpawnerService` không phụ thuộc vào các constructor cụ thể.
+  - **Kế thừa & Đa hình (Tiêu chí 6, 14, 15):** Cây phân cấp `Entity -> Mob -> (Zombie, Cow, Skeleton)` cho phép quản lý danh sách sinh vật thống nhất qua kiểu cha `Mob` (LSP), trong khi mỗi loài tự quyết định hành vi AI và tầm đánh riêng biệt qua `UpdateAI` (Polymorphism).
+  - **Repository Pattern & DIP (Tiêu chí 16):** `WorldPersistenceService` phụ thuộc vào `IWorldRepository`, cho phép chuyển đổi định dạng lưu từ JSON sang nhị phân mà không sửa đổi một dòng logic nghiệp vụ nào.
+  - **Xử lý ngoại lệ an toàn & Khả năng chịu lỗi (Tiêu chí 19):** Cả `ConfigLoader` và `JsonWorldRepository` đều được bọc `try-catch` nhiều tầng, xử lý biệt hóa `JsonException` và `IOException`, tự động fallback cấu hình mặc định giúp game không bao giờ sập khi gặp file hỏng.
+  - **Pure Dependency Injection (Tiêu chí 4, 8, 16):** Tuyệt đối không dùng Singleton cho logic nghiệp vụ; toàn bộ các phân hệ được `GameBootstrap` khởi tạo và tiêm thủ công qua constructor.
+
+---
+
 ## [v0.4.0] - 2026-11-09 22:10 (+07:00) — Hoàn thành Tuần T2: Mốc 1 – Sandbox chơi được (Dò tia Voxel, Tương tác Thế giới, Sinh tồn, Chế tạo & HUD)
 - **Loại cập nhật:** Minor
 - **Phân hệ:** World (A) & Survival (B)
