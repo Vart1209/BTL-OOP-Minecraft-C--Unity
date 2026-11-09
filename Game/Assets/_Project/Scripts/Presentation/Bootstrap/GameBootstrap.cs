@@ -41,7 +41,8 @@ namespace Minecraft.Presentation.Bootstrap
         [Header("Views liên kết trong Scene")]
         [SerializeField] private WorldView _worldView;
         [SerializeField] private ResourcePackView _resourcePackView;
-        [SerializeField] private PlayerInteractionController _playerController;
+        [SerializeField] private FirstPersonPlayerController _playerController;
+        [SerializeField] private PlayerInteractionController _interactionController;
         [SerializeField] private SandboxHudView _hudView;
         [SerializeField] private DayNightView _dayNightView;
         [SerializeField] private AtmosphereFogView _atmosphereFogView;
@@ -51,11 +52,15 @@ namespace Minecraft.Presentation.Bootstrap
         private ItemRegistry _itemRegistry;
         private RecipeBook _recipeBook;
         private DomainWorld _world;
-        private Entities.Player _player;
+        private VoxelRaycaster _raycaster;
+        private Domain.Entities.Player _player;
         private DayNightCycle _dayNightCycle;
+        private ChunkCoord _lastPlayerChunkCoord;
+        private bool _hasInitialChunkLoad;
         private readonly Dictionary<BlockPos, BlockId> _modifiedBlocks = new Dictionary<BlockPos, BlockId>();
 
         // Application Services
+        private ChunkLoadService _chunkLoadService;
         private BlockInteractionService _blockInteractionService;
         private CraftingService _craftingService;
         private SurvivalService _survivalService;
@@ -83,20 +88,23 @@ namespace Minecraft.Presentation.Bootstrap
             _itemRegistry = ItemRegistry.CreateDefault(_blockRegistry);
             _recipeBook = RecipeBook.CreateDefault();
 
-            // 3. Khởi tạo thế giới và sinh địa hình (Domain World)
+            // 3. Khởi tạo thế giới và sinh địa hình tự nhiên Perlin Noise (Domain World - Strategy Pattern)
             int seed = config.World.DefaultSeed;
-            ITerrainGenerator generator = new FlatTerrainGenerator(surfaceHeight: 1);
+            ITerrainGenerator generator = new PerlinTerrainGenerator(minHeight: 16, maxHeight: 38, scale: 0.05f);
             _world = new DomainWorld(generator, seed);
+            _raycaster = new VoxelRaycaster(_world, _blockRegistry);
 
             // 4. Khởi tạo người chơi và chu kỳ ngày/đêm (Domain Entities & Environment)
-            var spawnPos = new SysVector3(0f, 2f, 0f);
+            var spawnPos = new SysVector3(0f, 42f, 0f);
             var initialGameMode = new SurvivalMode();
-            _player = new Entities.Player(spawnPos, initialGameMode, config.Player.MaxHealth, config.Player.MaxHunger);
+            _player = new Domain.Entities.Player(spawnPos, initialGameMode, config.Player.MaxHealth, config.Player.MaxHunger);
             _dayNightCycle = new DayNightCycle(DayNightCycle.DefaultDayLengthSeconds, initialNormalizedTime: 0.1f);
 
             // 5. Khởi tạo các dịch vụ điều phối Use Case (Application Services)
+            int renderDistance = Mathf.Clamp(config.World.RenderDistanceInChunks, 2, 6);
+            _chunkLoadService = new ChunkLoadService(_world, renderDistance);
             _blockInteractionService = new BlockInteractionService(_world, _world, _blockRegistry, _itemRegistry);
-            _craftingService = new CraftingService(_recipeBook);
+            _craftingService = new CraftingService(_itemRegistry);
             _survivalService = new SurvivalService();
             _deathDropService = new DeathDropService();
             _combatService = new MobCombatService(attackRange: 2.0f);
@@ -122,9 +130,9 @@ namespace Minecraft.Presentation.Bootstrap
             };
 
             // 7. Theo dõi các khối bị sửa đổi để phục vụ lưu thế giới
-            _world.BlockChanged += (pos, oldId, newId) =>
+            _world.BlockChanged += args =>
             {
-                _modifiedBlocks[pos] = newId;
+                _modifiedBlocks[args.Position] = args.NewBlock;
             };
 
             // 8. Cung cấp vật phẩm khởi đầu cho người chơi để thử nghiệm Sandbox
@@ -145,12 +153,17 @@ namespace Minecraft.Presentation.Bootstrap
 
             if (_playerController != null)
             {
-                _playerController.Initialize(_player, _world, _blockInteractionService, _survivalService);
+                _playerController.Initialize(_player.CurrentGameMode, _player.Inventory);
+            }
+
+            if (_interactionController != null)
+            {
+                _interactionController.Initialize(_player, _raycaster, _blockInteractionService, _survivalService);
             }
 
             if (_hudView != null)
             {
-                _hudView.Initialize(_player, _craftingService);
+                _hudView.Initialize(_player, _recipeBook, _craftingService);
             }
 
             if (_dayNightView != null)
@@ -163,6 +176,9 @@ namespace Minecraft.Presentation.Bootstrap
                 _atmosphereFogView.Initialize(_dayNightCycle);
             }
 
+            // 10. Sinh và nạp lưới Chunk ban đầu quanh vị trí xuất phát của người chơi (UC02)
+            UpdateStreamingChunks(forceUpdate: true);
+
             Debug.Log($"[GameBootstrap] Khởi tạo hệ thống thành công! Seed: {seed}, GameMode: {_player.CurrentGameMode.ModeName}, ResourcePack: {_resourcePackService.CurrentPack?.PackId}");
         }
 
@@ -172,30 +188,83 @@ namespace Minecraft.Presentation.Bootstrap
 
             // Cập nhật nhịp sinh học, thu nhặt vật phẩm rơi và môi trường
             _dayNightCycle?.Tick(dt);
-            _survivalService?.Tick(dt, _player);
+            _survivalService?.TickPlayerSurvival(_player, dt);
             _deathDropService?.Tick(dt);
             _deathDropService?.CollectNearbyDrops(_player, DeathDropService.DefaultPickupRadius);
 
             bool isTargetable = _player.CurrentGameMode.CanTakeDamage;
             _mobSpawnerService?.Tick(dt, _player.Position, isTargetable);
+            if (_mobSpawnerService != null && _combatService != null)
+            {
+                _combatService.ProcessHostileAttacks(_mobSpawnerService.ActiveMobs, _player);
+            }
+
+            // Tự động tải/gỡ Chunk khi người chơi di chuyển sang Chunk mới (UC02)
+            UpdateStreamingChunks(forceUpdate: false);
 
             // Phím tắt thao tác nhanh (Quick test hotkeys)
             HandleDevHotkeys();
         }
 
+        private void UpdateStreamingChunks(bool forceUpdate)
+        {
+            if (_chunkLoadService == null || _player == null)
+            {
+                return;
+            }
+
+            BlockPos playerBlockPos = new BlockPos(
+                Mathf.FloorToInt(_player.Position.X),
+                Mathf.FloorToInt(_player.Position.Y),
+                Mathf.FloorToInt(_player.Position.Z));
+            ChunkCoord currentChunk = playerBlockPos.ToChunkCoord(Chunk.Width);
+
+            if (!forceUpdate && _hasInitialChunkLoad && currentChunk.Equals(_lastPlayerChunkCoord))
+            {
+                return;
+            }
+
+            _lastPlayerChunkCoord = currentChunk;
+            _hasInitialChunkLoad = true;
+
+            ChunkLoadResult result = _chunkLoadService.UpdateActiveChunks(currentChunk);
+            if (_worldView != null)
+            {
+                foreach (ChunkCoord loaded in result.NewlyLoaded)
+                {
+                    _worldView.LoadChunkView(loaded);
+                }
+
+                foreach (ChunkCoord unloaded in result.Unloaded)
+                {
+                    _worldView.UnloadChunkView(unloaded);
+                }
+            }
+        }
+
         private void HandleDevHotkeys()
         {
-            // F1: Đổi qua lại giữa Survival và Creative (State Pattern demo)
+            // F1: Đổi vòng tròn giữa Survival -> Creative -> Adventure (State Pattern demo)
             if (Input.GetKeyDown(KeyCode.F1))
             {
                 if (_player.CurrentGameMode is SurvivalMode)
                 {
                     _gameModeService.SwitchToCreative(_player);
                 }
+                else if (_player.CurrentGameMode is CreativeMode)
+                {
+                    _gameModeService.SwitchToAdventure(_player);
+                }
                 else
                 {
                     _gameModeService.SwitchToSurvival(_player);
                 }
+
+                if (_playerController != null)
+                {
+                    _playerController.Initialize(_player.CurrentGameMode, _player.Inventory);
+                }
+
                 Debug.Log($"[GameMode] Đã chuyển sang: {_player.CurrentGameMode.ModeName}");
             }
 
@@ -220,7 +289,7 @@ namespace Minecraft.Presentation.Bootstrap
             if (Input.GetKeyDown(KeyCode.F5))
             {
                 string savePath = Path.Combine(UnityEngine.Application.persistentDataPath, "quicksave.json");
-                bool ok = _persistenceService.SaveGame(savePath, 20261107, "QuickSave", _world, _player, _modifiedBlocks);
+                bool ok = _persistenceService.SaveGame(savePath, _world.Seed, "QuickSave", _world, _player, _modifiedBlocks);
                 Debug.Log(ok ? $"[Save] Đã lưu thế giới vào: {savePath}" : "[Save] Lưu thế giới thất bại!");
             }
 
@@ -236,6 +305,12 @@ namespace Minecraft.Presentation.Bootstrap
                     {
                         _modifiedBlocks[kvp.Key] = kvp.Value;
                     }
+
+                    if (_playerController != null)
+                    {
+                        _playerController.Initialize(_player.CurrentGameMode, _player.Inventory);
+                    }
+
                     Debug.Log($"[Load] Đã nạp thế giới thành công! Chế độ: {loadedMode.ModeName}, Số khối khôi phục: {restoredBlocks.Count}");
                 }
                 else
