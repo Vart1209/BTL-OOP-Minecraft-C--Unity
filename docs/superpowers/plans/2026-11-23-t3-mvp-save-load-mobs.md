@@ -35,7 +35,7 @@
 
 ### PHẦN 1: PHÂN HỆ WORLD & INFRASTRUCTURE A (`feature/t3-a-save-load-config`)
 
-- [ ] **Task 1.1: Cài đặt cụ thể các GameMode theo State Pattern (Domain)**
+- [x] **Task 1.1: Cài đặt cụ thể các GameMode theo State Pattern (Domain)**
   - **Files:**
     - Create: `Game/Assets/_Project/Scripts/Domain/GameModes/SurvivalMode.cs`
     - Create: `Game/Assets/_Project/Scripts/Domain/GameModes/CreativeMode.cs`
@@ -46,7 +46,7 @@
     - `CreativeMode`: `CanTakeDamage = false`, `ConsumesItemsOnPlace = false`, `InstantBreak = true`, `CanFly = true`, `CanBreakBlock(id)` trả về `true` cho mọi block bao gồm Bedrock (Quy tắc R12).
     - `AdventureMode` (Bài mở rộng thi vấn đáp): `CanTakeDamage = true`, `ConsumesItemsOnPlace = true`, `InstantBreak = false`, `CanFly = false`, `CanBreakBlock(id)` luôn trả về `false` (không cho phép phá block).
 
-- [ ] **Task 1.2: Hệ thống cấu hình an toàn `ConfigLoader` (Infrastructure)**
+- [x] **Task 1.2: Hệ thống cấu hình an toàn `ConfigLoader` (Infrastructure)**
   - **Files:**
     - Create: `Game/Assets/_Project/Scripts/Domain/Contracts/IConfigLoader.cs`
     - Create: `Game/Assets/_Project/Scripts/Infrastructure/Config/GameConfigDto.cs`
@@ -54,7 +54,7 @@
     - Test: `Game/Assets/_Project/Tests/EditMode/ConfigLoaderTests.cs`
   - **Description:** Đọc cấu hình từ file JSON (khớp `StreamingAssets/config.json`), bọc toàn bộ I/O trong `try-catch`. Nếu file không tồn tại, đường dẫn sai hoặc file JSON hỏng cú pháp, tự động trả về `GameConfigDto.CreateDefault()` và ghi nhận cảnh báo.
 
-- [ ] **Task 1.3: DTO và Hợp đồng Lưu/Tải thế giới `IWorldRepository` (Domain & Infrastructure)**
+- [x] **Task 1.3: DTO và Hợp đồng Lưu/Tải thế giới `IWorldRepository` (Domain & Infrastructure)**
   - **Files:**
     - Create: `Game/Assets/_Project/Scripts/Domain/Contracts/IWorldRepository.cs`
     - Create: `Game/Assets/_Project/Scripts/Infrastructure/Persistence/WorldSaveDto.cs`
@@ -63,7 +63,7 @@
     - Create: `Game/Assets/_Project/Scripts/Infrastructure/Persistence/InventorySlotDto.cs`
   - **Description:** Định nghĩa cấu trúc dữ liệu lưu trữ tách biệt hoàn toàn giữa dữ liệu lưu (DTO) và đối tượng nghiệp vụ (Entity/Aggregate).
 
-- [ ] **Task 1.4: Triển khai `JsonWorldRepository` (Infrastructure) & `WorldPersistenceService` (Application)**
+- [x] **Task 1.4: Triển khai `JsonWorldRepository` (Infrastructure) & `WorldPersistenceService` (Application)**
   - **Files:**
     - Create: `Game/Assets/_Project/Scripts/Infrastructure/Persistence/JsonWorldRepository.cs`
     - Create: `Game/Assets/_Project/Scripts/Application/World/WorldPersistenceService.cs`
@@ -72,7 +72,7 @@
     - Lưu: lấy seed, các block bị sửa đổi trong `World`, vị trí người chơi, máu, đói, danh sách slot inventory -> serialize thành file JSON có format đẹp.
     - Tải: đọc file JSON (bọc `try-catch`), nếu lỗi trả về `false`, nếu thành công khôi phục lại thế giới, đặt lại các block đã sửa đổi và khôi phục trạng thái người chơi.
 
-- [ ] **Task 1.5: Xác minh & Commit Phân hệ A**
+- [x] **Task 1.5: Xác minh & Commit Phân hệ A**
   - Chạy toàn bộ test (`dotnet test`).
   - Commit từng bước và merge `feature/t3-a-save-load-config` vào `dev`.
 
@@ -80,7 +80,7 @@
 
 ### PHẦN 2: PHÂN HỆ SURVIVAL, MOBS, DAY/NIGHT B (`feature/t3-b-mobs-daynight`)
 
-- [ ] **Task 2.1: Vòng lặp Ngày/Đêm `DayNightCycle` (Domain & Application)**
+- [x] **Task 2.1: Vòng lặp Ngày/Đêm `DayNightCycle` (Domain & Application)**
   - **Files:**
     - Create: `Game/Assets/_Project/Scripts/Domain/Environment/DayNightPhase.cs`
     - Create: `Game/Assets/_Project/Scripts/Domain/Environment/DayNightCycle.cs`
@@ -90,7 +90,7 @@
     - `DayNightPhase`: `Day`, `Sunset`, `Night`, `Sunrise`.
     - Observer Pattern: Cung cấp sự kiện `PhaseChanged` và `TimeUpdated` để UI/Ánh sáng tự cập nhật mà Domain không cần biết Unity.
 
-- [ ] **Task 2.2: Phân cấp Mob đa hình & AI Mob cơ bản (Domain)**
+- [x] **Task 2.2: Phân cấp Mob đa hình & AI Mob cơ bản (Domain)**
   - **Files:**
     - Create: `Game/Assets/_Project/Scripts/Domain/Entities/Mobs/MobType.cs`
     - Create: `Game/Assets/_Project/Scripts/Domain/Entities/Mobs/MobState.cs`
@@ -105,7 +105,7 @@
     - `Cow`: Mob hiền lành (`MobType.Cow`, máu 10, dame 0). Đi lang thang ngẫu nhiên (`MobState.Wander`), không bao giờ tấn công.
     - `Skeleton`: Mob thù địch tầm xa (bài mở rộng vấn đáp, máu 20, dame 2, giữ khoảng cách và tấn công tầm xa).
 
-- [ ] **Task 2.3: Mob Factory & Spawner (Quy tắc R11) (Domain & Application)**
+- [x] **Task 2.3: Mob Factory & Spawner (Quy tắc R11) (Domain & Application)**
   - **Files:**
     - Create: `Game/Assets/_Project/Scripts/Domain/Contracts/IMobFactory.cs`
     - Create: `Game/Assets/_Project/Scripts/Domain/Entities/Mobs/MobFactory.cs`
@@ -119,7 +119,7 @@
       - Kiểm tra giới hạn số lượng tối đa (`activeMobs.Count < maxCapacity`).
       - Tự động dọn dẹp mob đã chết (`!mob.IsAlive`).
 
-- [ ] **Task 2.4: Dịch vụ Chiến đấu & Chuyển đổi GameMode (Application)**
+- [x] **Task 2.4: Dịch vụ Chiến đấu & Chuyển đổi GameMode (Application)**
   - **Files:**
     - Create: `Game/Assets/_Project/Scripts/Application/Survival/MobCombatService.cs`
     - Create: `Game/Assets/_Project/Scripts/Application/Survival/GameModeService.cs`
@@ -130,7 +130,7 @@
       - `TryPlayerAttackMob(Player player, Mob targetMob, int weaponDamage)`: Người chơi đánh Mob, trừ máu Mob, nếu máu <= 0 Mob chết.
     - `GameModeService`: Điều phối **UC11 (Đổi GameMode)**, chuyển đổi giữa Survival, Creative, Adventure an toàn.
 
-- [ ] **Task 2.5: Presentation Views & GameBootstrap Dependency Injection (Presentation)**
+- [x] **Task 2.5: Presentation Views & GameBootstrap Dependency Injection (Presentation)**
   - **Files:**
     - Create: `Game/Assets/_Project/Scripts/Presentation/Environment/DayNightView.cs`
     - Create: `Game/Assets/_Project/Scripts/Presentation/Mobs/MobView.cs`
@@ -140,7 +140,7 @@
     - `MobView`: Đồng bộ vị trí `Mob.Position` và animation đơn giản.
     - `GameBootstrap`: Composition Root kết nối toàn bộ Domain, Application, Infrastructure và Presentation thông qua Constructor Injection, hoàn toàn không sử dụng Singleton.
 
-- [ ] **Task 2.6: Xác minh & Commit Phân hệ B**
+- [x] **Task 2.6: Xác minh & Commit Phân hệ B**
   - Chạy toàn bộ test suite (`dotnet test`).
   - Commit từng bước và merge `feature/t3-b-mobs-daynight` vào `dev`.
 
@@ -148,9 +148,9 @@
 
 ### PHẦN 3: TỔNG HỢP, TÀI LIỆU & ĐỒNG BỘ MỐC 2 (v0.5.0)
 
-- [ ] **Task 3.1: Kiểm thử tích hợp toàn diện**
+- [x] **Task 3.1: Kiểm thử tích hợp toàn diện**
   - Đảm bảo tất cả các test suite từ T0, T1, T2 và T3 đều chạy PASS 100% trên `dotnet test`.
-- [ ] **Task 3.2: Cập nhật `CHANGELOG.md` lên `v0.5.0`**
+- [x] **Task 3.2: Cập nhật `CHANGELOG.md` lên `v0.5.0`**
   - Ghi nhận đầy đủ các mục Added, Changed, Removed, Giải thích OOP / AI phục vụ vấn đáp.
-- [ ] **Task 3.3: Push lên GitHub**
+- [x] **Task 3.3: Push lên GitHub**
   - `git push origin dev` cùng các nhánh feature `feature/t3-a-save-load-config` và `feature/t3-b-mobs-daynight`.
