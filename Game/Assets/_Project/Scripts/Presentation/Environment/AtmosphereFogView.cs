@@ -29,8 +29,8 @@ namespace Minecraft.Presentation.Environment
         [SerializeField] private Color _sunriseAmbientColor = new Color(0.52f, 0.42f, 0.36f, 1f);
 
         [Header("Mật độ sương mù (Fog Density)")]
-        [SerializeField] private float _dayFogDensity = 0.008f;
-        [SerializeField] private float _nightFogDensity = 0.018f;
+        [SerializeField] private float _dayFogDensity = 0.0025f;
+        [SerializeField] private float _nightFogDensity = 0.0065f;
 
         private DayNightCycle _cycle;
         private DayNightPhase _currentPhase;

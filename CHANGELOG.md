@@ -5,6 +5,23 @@ Tất cả các thay đổi của dự án được AI và các thành viên ghi
 
 ---
 
+## [v1.0.2] - 2026-11-09 23:18 (+07:00) — Ghép lưới Texture Atlas 16×16 từ gói OptimumRealism_64x, nạp đúng gói mặc định từ config.json và tinh chỉnh sương mù
+- **Loại cập nhật:** Patch
+- **Phân hệ:** World (A) & Presentation (Shared)
+- **Thêm mới (Added):**
+  - Không
+- **Chỉnh sửa (Changed):**
+  - `Game/Assets/_Project/Scripts/Application/World/ResourcePackService.cs` — Hỗ trợ tham số tùy chọn `initialPackId = "default"` trên constructor và fallback về `"default"` nếu gói chỉ định không tồn tại.
+  - `Game/Assets/_Project/Scripts/Presentation/Bootstrap/GameBootstrap.cs` — Truyền `config.ResourcePack.ActivePack` (`OptimumRealism_64x`) vào `ResourcePackService` khi khởi động thay vì mặc định `default`.
+  - `Game/Assets/_Project/Scripts/Presentation/World/ResourcePackView.cs` — Nâng cấp bộ ghép Texture Atlas 16×16 ô khớp với chỉ số UV của `BlockRegistry` (từ `tileIndex` 1..13: `bedrock`, `stone`, `dirt`, `grass_block_top` nhuộm xanh lá, `grass_block_side`, `oak_log`, `oak_log_top`, `oak_leaves`, `sand`, `oak_planks`, `crafting_table_top`, `crafting_table_side`, `cobblestone`), kèm bộ sinh pixel-art màu sắc tự động cho gói `default` và gán cả `_BaseMap` (URP) lẫn `mainTexture` (Standard).
+  - `Game/Assets/_Project/Scripts/Presentation/Environment/AtmosphereFogView.cs` — Giảm mật độ sương mù mặc định (`0.0025f` ban ngày / `0.0065f` ban đêm) để nhìn rõ bề mặt texture của các khối ở xa.
+- **Xóa bỏ (Removed):**
+  - Không
+- **Giải thích OOP / AI (dùng khi vấn đáp):**
+  - Hoàn thiện cơ chế phối hợp giữa `ChunkMeshBuilder` (Domain tính UV theo lưới 16×16) và `ResourcePackView` (Presentation ghép các tệp `.png` từ gói `OptimumRealism_64x` vào đúng ô `tileIndex` trên `Texture2D` Atlas).
+
+---
+
 ## [v1.0.1] - 2026-11-09 23:10 (+07:00) — Sửa lỗi CS1061 thiếu hàm `MobCombatService.ProcessHostileAttacks` khi biên dịch trong Unity Editor
 - **Loại cập nhật:** Patch
 - **Phân hệ:** Survival (B) & Presentation (Shared)

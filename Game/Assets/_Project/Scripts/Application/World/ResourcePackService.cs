@@ -34,10 +34,12 @@ namespace Minecraft.Application.World
         /// Khởi tạo dịch vụ quản lý gói tài nguyên với chiến lược cung cấp ban đầu.
         /// </summary>
         /// <param name="provider">Chiến lược nạp gói tài nguyên (không được null).</param>
-        public ResourcePackService(ITextureAtlasProvider provider)
+        /// <param name="initialPackId">Mã gói tài nguyên khởi đầu (mặc định là <c>"default"</c>).</param>
+        public ResourcePackService(ITextureAtlasProvider provider, string initialPackId = "default")
         {
             _provider = provider ?? throw new ArgumentNullException(nameof(provider));
-            _currentPack = _provider.LoadPack("default");
+            string targetPack = string.IsNullOrWhiteSpace(initialPackId) ? "default" : initialPackId;
+            _currentPack = _provider.LoadPack(targetPack) ?? _provider.LoadPack("default");
         }
 
         /// <summary>
