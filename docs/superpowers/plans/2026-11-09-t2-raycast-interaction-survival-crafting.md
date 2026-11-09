@@ -32,11 +32,11 @@
 - **Tests to write:**
   - `Game/Assets/_Project/Tests/EditMode/VoxelInteractionTests.cs` (phần Raycaster)
 - **Steps:**
-  1. Viết failing tests kiểm tra DDA raycast: bắn trúng khối trong tầm 5 block (Quy tắc R7), trượt khi ngoài 5 block, xác định đúng `BlockPosition`, `AdjacentPosition`, `HitFace`, `Distance`.
-  2. Chạy test xác nhận FAIL (RED).
-  3. Cài đặt `VoxelRaycastHit.cs` và `VoxelRaycaster.cs`.
-  4. Chạy test xác nhận PASS (GREEN).
-  5. Commit `feat(world): add 3d dda voxel raycaster and raycasthit struct`.
+  - [x] 1. Viết failing tests kiểm tra DDA raycast: bắn trúng khối trong tầm 5 block (Quy tắc R7), trượt khi ngoài 5 block, xác định đúng `BlockPosition`, `AdjacentPosition`, `HitFace`, `Distance`.
+  - [x] 2. Chạy test xác nhận FAIL (RED).
+  - [x] 3. Cài đặt `VoxelRaycastHit.cs` và `VoxelRaycaster.cs`.
+  - [x] 4. Chạy test xác nhận PASS (GREEN).
+  - [x] 5. Commit `feat(world): add 3d dda voxel raycaster and raycasthit struct`.
 
 ### Task 1.2: Dịch vụ Tương tác Khối & Quản lý Tải Chunk (`BlockInteractionService`, `ChunkLoadService`)
 - **Files to create:**
@@ -47,12 +47,12 @@
   - Kiểm tra `BlockInteractionService.TryPlaceBlock` (chặn đặt đè lên chân/đầu người chơi R2, trừ item ở Survival, không trừ ở Creative R12).
   - Kiểm tra `ChunkLoadService.UpdateActiveChunks` (sinh và gỡ chunk theo bán kính quanh người chơi).
 - **Steps:**
-  1. Viết failing tests.
-  2. Chạy test xác nhận FAIL (RED).
-  3. Cài đặt `BlockInteractionService.cs` và `ChunkLoadService.cs`.
-  4. Chạy test xác nhận PASS (GREEN).
-  5. Commit `feat(application): add block interaction and chunk load services`.
-  6. Merge nhánh `feature/t2-a-raycast-world-interaction` vào `dev`.
+  - [x] 1. Viết failing tests.
+  - [x] 2. Chạy test xác nhận FAIL (RED).
+  - [x] 3. Cài đặt `BlockInteractionService.cs` và `ChunkLoadService.cs`.
+  - [x] 4. Chạy test xác nhận PASS (GREEN).
+  - [x] 5. Commit `feat(application): add block interaction and chunk load services`.
+  - [x] 6. Merge nhánh `feature/t2-a-raycast-world-interaction` vào `dev`.
 
 ---
 
@@ -67,11 +67,11 @@
 - **Tests to write:**
   - `Game/Assets/_Project/Tests/EditMode/SurvivalAndCraftingTests.cs` (phần Health, Hunger, Player)
 - **Steps:**
-  1. Viết failing tests kiểm tra `Health` (sát thương, miễn sát thương Creative R12, sự kiện Died R9), `Hunger` (ăn hồi đói, đói = 0 trừ máu và đói >= 18 hồi máu R8), `Player` (kế thừa `Entity`, hợp thành `Health`/`Hunger`/`Inventory`, đổi GameMode, `Respawn` về `SpawnPoint`).
-  2. Chạy test xác nhận FAIL (RED).
-  3. Cài đặt 4 files trên trong `Domain/Entities/`.
-  4. Chạy test xác nhận PASS (GREEN).
-  5. Commit `feat(survival): add health, hunger and player entity`.
+  - [x] 1. Viết failing tests kiểm tra `Health` (sát thương, miễn sát thương Creative R12, sự kiện Died R9), `Hunger` (ăn hồi đói, đói = 0 trừ máu và đói >= 18 hồi máu R8), `Player` (kế thừa `Entity`, hợp thành `Health`/`Hunger`/`Inventory`, đổi GameMode, `Respawn` về `SpawnPoint`).
+  - [x] 2. Chạy test xác nhận FAIL (RED).
+  - [x] 3. Cài đặt 4 files trên trong `Domain/Entities/`.
+  - [x] 4. Chạy test xác nhận PASS (GREEN).
+  - [x] 5. Commit `feat(survival): add health, hunger and player entity`.
 
 ### Task 2.2: Hệ thống Chế tạo & Dịch vụ Sinh tồn (`RecipeIngredient`, `Recipe`, `RecipeBook`, `CraftingService`, `SurvivalService`)
 - **Files to create:**
@@ -84,11 +84,11 @@
   - Kiểm tra `CraftingService.TryCraft` (thành công 1 Wood -> 4 Planks, thất bại khi thiếu nguyên liệu bảo toàn vật phẩm theo Quy tắc R10).
   - Kiểm tra `SurvivalService.TryEatSelectedFood` (ăn táo tăng điểm đói và trừ 1 táo).
 - **Steps:**
-  1. Viết failing tests.
-  2. Chạy test xác nhận FAIL (RED).
-  3. Cài đặt 5 files trên.
-  4. Chạy test xác nhận PASS (GREEN).
-  5. Commit `feat(crafting): add recipe book, crafting service and survival service`.
+  - [x] 1. Viết failing tests.
+  - [x] 2. Chạy test xác nhận FAIL (RED).
+  - [x] 3. Cài đặt 5 files trên.
+  - [x] 4. Chạy test xác nhận PASS (GREEN).
+  - [x] 5. Commit `feat(crafting): add recipe book, crafting service and survival service`.
 
 ### Task 2.3: Lớp Trình diễn & Giao diện Sandbox (`WorldView`, `PlayerInteractionController`, `SandboxHudView`)
 - **Files to create:**
@@ -96,15 +96,15 @@
   - `Game/Assets/_Project/Scripts/Presentation/Player/PlayerInteractionController.cs`
   - `Game/Assets/_Project/Scripts/Presentation/UI/SandboxHudView.cs`
 - **Steps:**
-  1. Cài đặt `WorldView.cs` (lắng nghe `World.BlockChanged`, gọi `ChunkMeshBuilder` và cập nhật các `ChunkView` kề).
-  2. Cài đặt `PlayerInteractionController.cs` (chuột trái phá block, chuột phải đặt block / ăn thức ăn).
-  3. Cài đặt `SandboxHudView.cs` (kết nối Observer `HealthChanged`, `HungerChanged`, `InventoryChanged` vẽ HUD Máu, Đói, Hotbar và phím chế tạo).
-  4. Commit `feat(presentation): add world view, player interaction controller and sandbox hud view`.
-  5. Merge nhánh `feature/t2-b-survival-crafting-ui` vào `dev`.
+  - [x] 1. Cài đặt `WorldView.cs` (lắng nghe `World.BlockChanged`, gọi `ChunkMeshBuilder` và cập nhật các `ChunkView` kề).
+  - [x] 2. Cài đặt `PlayerInteractionController.cs` (chuột trái phá block, chuột phải đặt block / ăn thức ăn).
+  - [x] 3. Cài đặt `SandboxHudView.cs` (kết nối Observer `HealthChanged`, `HungerChanged`, `InventoryChanged` vẽ HUD Máu, Đói, Hotbar và phím chế tạo).
+  - [x] 4. Commit `feat(presentation): add world view, player interaction controller and sandbox hud view`.
+  - [x] 5. Merge nhánh `feature/t2-b-survival-crafting-ui` vào `dev`.
 
 ---
 
 ## Phase 3: Hoàn tất, Cập nhật CHANGELOG & Đẩy mã nguồn
-- Chạy toàn bộ test suite (EditMode NUnit tests) đảm bảo 100% test cases (≥ 15 tests mới) đều PASS.
-- Cập nhật `CHANGELOG.md` lên phiên bản `v0.4.0` (giữ nguyên tiêu đề `## [v0.3.1]` và các phiên bản trước).
-- Push cả nhánh `dev` và các nhánh tính năng `feature/*` lên `origin`.
+- [x] Chạy toàn bộ test suite (EditMode NUnit tests) đảm bảo 100% test cases (≥ 15 tests mới) đều PASS.
+- [x] Cập nhật `CHANGELOG.md` lên phiên bản `v0.4.0` (giữ nguyên tiêu đề `## [v0.3.1]` và các phiên bản trước).
+- [x] Push cả nhánh `dev` và các nhánh tính năng `feature/*` lên `origin`.

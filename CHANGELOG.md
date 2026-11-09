@@ -5,6 +5,44 @@ Tất cả các thay đổi của dự án được AI và các thành viên ghi
 
 ---
 
+## [v0.4.0] - 2026-11-09 22:10 (+07:00) — Hoàn thành Tuần T2: Mốc 1 – Sandbox chơi được (Dò tia Voxel, Tương tác Thế giới, Sinh tồn, Chế tạo & HUD)
+- **Loại cập nhật:** Minor
+- **Phân hệ:** World (A) & Survival (B)
+- **Thêm mới (Added):**
+  - **Phân hệ World & Application A (Thành viên A):**
+    - `Game/Assets/_Project/Scripts/Domain/World/VoxelRaycastHit.cs` — Struct bất biến (`readonly struct`) lưu trữ kết quả va chạm dò tia Voxel (`IsHit`, `BlockPosition`, `AdjacentPosition`, `HitFace`, `Distance`).
+    - `Game/Assets/_Project/Scripts/Domain/World/VoxelRaycaster.cs` — Thuật toán 3D DDA (Amanatides & Woo) thuần C# với `System.Numerics.Vector3`, giới hạn tầm với 5.0 block theo Quy tắc R7.
+    - `Game/Assets/_Project/Scripts/Application/World/BlockInteractionService.cs` — Dịch vụ điều phối UC03 (Phá block) và UC04 (Đặt block), thực thi Quy tắc R1 & R12 (Bedrock ở Survival vs Creative), R2 (chặn đặt đè lên chân/đầu người chơi), R3 (biên độ cao) và R5 (rơi vật phẩm vào túi đồ).
+    - `Game/Assets/_Project/Scripts/Application/World/ChunkLoadResult.cs` — Gói dữ liệu kết quả sau chu kỳ nạp/gỡ Chunk.
+    - `Game/Assets/_Project/Scripts/Application/World/ChunkLoadService.cs` — Dịch vụ điều phối UC02 (Sinh và khám phá Chunk theo vị trí người chơi), tự động giải phóng các Chunk ngoài bán kính tầm nhìn.
+    - `Game/Assets/_Project/Tests/EditMode/VoxelInteractionTests.cs` — Bộ 6 Unit Test NUnit kiểm thử thuật toán DDA raycast và các dịch vụ tương tác khối, nạp Chunk.
+  - **Phân hệ Survival, Crafting & Presentation B (Thành viên B):**
+    - `Game/Assets/_Project/Scripts/Domain/Entities/Health.cs` — Đóng gói máu (0..Max), miễn nhiễm sát thương ở Creative (Quy tắc R12), phát sự kiện `HealthChanged` và `Died` (Quy tắc R9).
+    - `Game/Assets/_Project/Scripts/Domain/Entities/Hunger.cs` — Đóng gói thanh đói, chu kỳ 4.0s: đói = 0 trừ máu, đói >= 18 hồi máu (Quy tắc R8).
+    - `Game/Assets/_Project/Scripts/Domain/Entities/Entity.cs` — Lớp cơ sở trừu tượng (`abstract class`) cho mọi thực thể có vị trí và máu trong không gian 3 chiều.
+    - `Game/Assets/_Project/Scripts/Domain/Entities/Player.cs` — Thực thể người chơi kế thừa `Entity`, Hợp thành `Health`/`Hunger`/`Inventory`, State Pattern theo `IGameMode` và phương thức `Respawn()` hồi sinh về SpawnPoint (Quy tắc R9).
+    - `Game/Assets/_Project/Scripts/Domain/Crafting/RecipeIngredient.cs` — Struct bất biến đại diện cho thành phần nguyên liệu và số lượng yêu cầu.
+    - `Game/Assets/_Project/Scripts/Domain/Crafting/Recipe.cs` — Thực thể công thức chế tạo gồm nguyên liệu đầu vào và sản phẩm đầu ra.
+    - `Game/Assets/_Project/Scripts/Domain/Crafting/RecipeBook.cs` — Quan hệ Kết tập `RecipeBook ◇ Recipe`, đăng ký 5 công thức cơ bản (Ván gỗ, Bàn chế tạo, Cúp gỗ, Kiếm gỗ, Cúp đá).
+    - `Game/Assets/_Project/Scripts/Application/Survival/CraftingService.cs` — Dịch vụ điều phối UC09 (Chế tạo vật phẩm) theo Quy tắc R10 ("đủ hết hoặc không làm gì" - Atomic Transaction).
+    - `Game/Assets/_Project/Scripts/Application/Survival/SurvivalService.cs` — Dịch vụ điều phối UC10 (Ăn thức ăn) và cập nhật nhịp sinh tồn thời gian thực.
+    - `Game/Assets/_Project/Scripts/Presentation/World/WorldView.cs` — MonoBehaviour lắng nghe Observer `World.BlockChanged`, quản lý các `ChunkView` và cập nhật lại lưới khi đặt/phá block.
+    - `Game/Assets/_Project/Scripts/Presentation/Player/PlayerInteractionController.cs` — Controller bắt phím chuột, dùng `VoxelRaycaster` để phá block (chuột trái), ăn thức ăn / đặt block (chuột phải).
+    - `Game/Assets/_Project/Scripts/Presentation/UI/SandboxHudView.cs` — HUD OnGUI kết nối Observer hiển thị tâm ngắm, thanh Máu, thanh Đói, 9 ô Hotbar và bảng chế tạo nhanh.
+    - `Game/Assets/_Project/Tests/EditMode/SurvivalAndCraftingTests.cs` — Bộ 5 Unit Test NUnit kiểm thử độc lập hệ thống Máu, Đói, Player, Chế tạo và Sinh tồn.
+    - `docs/superpowers/plans/2026-11-09-t2-raycast-interaction-survival-crafting.md` — Kế hoạch triển khai chi tiết Tuần T2.
+- **Chỉnh sửa (Changed):**
+  - Không
+- **Xóa bỏ (Removed):**
+  - Không
+- **Giải thích OOP / AI (dùng khi vấn đáp):**
+  - **Dependency Injection & Inversion (Tiêu chí 2, 16):** Toàn bộ các Application Service (`BlockInteractionService`, `ChunkLoadService`, `CraftingService`, `SurvivalService`) nhận các giao diện và thực thể Domain qua constructor, giúp các tầng độc lập hoàn toàn và dễ kiểm thử cô lập.
+  - **Quan hệ Kế thừa & Hợp thành (Tiêu chí 6, 14):** `Player : Entity` (Kế thừa); `Player ◆ Inventory, Health, Hunger` (Hợp thành); `RecipeBook ◇ Recipe` (Kết tập).
+  - **Thuật toán DDA thuần C# (Tiêu chí 4, 8):** `VoxelRaycaster` chạy độc lập với Unity Physics, bảo đảm tầng Domain tuân thủ `noEngineReferences: true`.
+  - **Atomic Transaction (Quy tắc R10):** Phương thức `CraftingService.TryCraft` kiểm tra đầy đủ nguyên liệu trước khi tiến hành trừ, tránh mất mát vật phẩm nếu thiếu nguyên liệu.
+
+---
+
 ## [v0.3.1] - 2026-11-09 21:52 (+07:00) — Khôi phục tiêu đề phiên bản v0.2.0 trong CHANGELOG và đồng bộ định dạng xuống dòng cuối file
 - **Loại cập nhật:** Patch
 - **Phân hệ:** Shared/Setup
