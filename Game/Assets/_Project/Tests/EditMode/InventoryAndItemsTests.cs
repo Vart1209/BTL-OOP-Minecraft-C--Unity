@@ -103,5 +103,83 @@ namespace Minecraft.Domain.Tests
             Assert.That(cookedBeef.HungerRestore, Is.EqualTo(8));
             Assert.That(cookedBeef.HealthRestore, Is.EqualTo(2));
         }
+
+        [Test]
+        public void ItemStack_AggregationAndOverflowHandling_ReturnsRemainderCorrectly()
+        {
+            BlockRegistry blockRegistry = BlockRegistry.CreateDefault();
+            ItemRegistry itemRegistry = ItemRegistry.CreateDefault(blockRegistry);
+            Item dirt = itemRegistry.Get(ItemId.Dirt);
+
+            ItemStack stack = new ItemStack(dirt, 60);
+            Assert.That(stack.Count, Is.EqualTo(60));
+            Assert.That(stack.Definition, Is.SameAs(dirt));
+
+            // Thêm 10 vào stack hiện có 60 (MaxStack = 64) -> thêm được 4, dư 6
+            int remainder = stack.Add(10);
+            Assert.That(stack.Count, Is.EqualTo(64));
+            Assert.That(remainder, Is.EqualTo(6));
+
+            // Trừ 20 khỏi stack -> còn 44
+            int removed = stack.Remove(20);
+            Assert.That(removed, Is.EqualTo(20));
+            Assert.That(stack.Count, Is.EqualTo(44));
+        }
+
+        [Test]
+        public void Inventory_AddItemAndAutoSplit_FillsExistingStackThenEmptySlots()
+        {
+            BlockRegistry blockRegistry = BlockRegistry.CreateDefault();
+            ItemRegistry itemRegistry = ItemRegistry.CreateDefault(blockRegistry);
+            Item stone = itemRegistry.Get(ItemId.Stone);
+
+            Inventory inventory = new Inventory();
+            bool eventFired = false;
+            inventory.InventoryChanged += () => eventFired = true;
+
+            // Thêm 70 khối Stone (vượt quá 64) -> ô 0 có 64, ô 1 có 6
+            int remainder = inventory.AddItem(stone, 70);
+            Assert.That(remainder, Is.EqualTo(0));
+            Assert.That(eventFired, Is.True);
+            Assert.That(inventory.GetSlot(0).Count, Is.EqualTo(64));
+            Assert.That(inventory.GetSlot(1).Count, Is.EqualTo(6));
+            Assert.That(inventory.CountItem(ItemId.Stone), Is.EqualTo(70));
+
+            // Thêm tiếp 10 khối Stone -> dồn vào ô 1 (6 + 10 = 16)
+            inventory.AddItem(stone, 10);
+            Assert.That(inventory.GetSlot(1).Count, Is.EqualTo(16));
+            Assert.That(inventory.CountItem(ItemId.Stone), Is.EqualTo(80));
+        }
+
+        [Test]
+        public void Inventory_HotbarSelectionAndAtomicRemove_SatisfiesRuleR10()
+        {
+            BlockRegistry blockRegistry = BlockRegistry.CreateDefault();
+            ItemRegistry itemRegistry = ItemRegistry.CreateDefault(blockRegistry);
+            Item wood = itemRegistry.Get(ItemId.Wood);
+
+            Inventory inventory = new Inventory();
+            inventory.AddItem(wood, 5);
+
+            // Chọn ô Hotbar
+            inventory.SelectHotbarSlot(0);
+            Assert.That(inventory.SelectedHotbarIndex, Is.EqualTo(0));
+            Assert.That(inventory.GetSelectedSlot().Definition.Id, Is.EqualTo(ItemId.Wood));
+
+            // Chọn ô ngoài [0..8] bị từ chối
+            Assert.Throws<ArgumentOutOfRangeException>(() => inventory.SelectHotbarSlot(9));
+            Assert.Throws<ArgumentOutOfRangeException>(() => inventory.SelectHotbarSlot(-1));
+
+            // Quy tắc R10: "đủ hết hoặc không làm gì"
+            // Muốn trừ 10 nhưng chỉ có 5 -> trả về false và không trừ cái nào
+            bool removeFail = inventory.RemoveItem(ItemId.Wood, 10);
+            Assert.That(removeFail, Is.False);
+            Assert.That(inventory.CountItem(ItemId.Wood), Is.EqualTo(5));
+
+            // Trừ 3 hợp lệ -> còn 2
+            bool removeSuccess = inventory.RemoveItem(ItemId.Wood, 3);
+            Assert.That(removeSuccess, Is.True);
+            Assert.That(inventory.CountItem(ItemId.Wood), Is.EqualTo(2));
+        }
     }
 }
