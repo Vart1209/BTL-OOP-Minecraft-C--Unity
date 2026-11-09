@@ -5,7 +5,46 @@ Tất cả các thay đổi của dự án được AI và các thành viên ghi
 
 ---
 
-## [v0.2.0] - 2026-11-07 11:09 (+07:00) — Hoàn thành Tuần T0: Chuẩn hóa Unity 6000.6.8f1, tích hợp Resource Pack và xây dựng Bộ Hợp đồng chung tầng Domain
+## [v0.3.0] - 2026-11-09 20:20 (+07:00) — Hoàn thành Tuần T1: Triển khai Hệ thống World/Chunk/Mesh (Phân hệ A) và Items/Inventory/Player (Phân hệ B)
+- **Loại cập nhật:** Minor
+- **Phân hệ:** World (A) & Survival (B)
+- **Thêm mới (Added):**
+  - **Phân hệ World (Thành viên A):**
+    - `Game/Assets/_Project/Scripts/Domain/Blocks/BlockFace.cs` — Enum định danh 6 mặt khối (`Top`, `Bottom`, `North`, `South`, `East`, `West`).
+    - `Game/Assets/_Project/Scripts/Domain/Blocks/BlockType.cs` — Thực thể kiểu khối, đóng gói toàn bộ thuộc tính, kiểm tra hợp lệ độ cứng và ánh xạ chỉ số texture theo từng mặt.
+    - `Game/Assets/_Project/Scripts/Domain/Blocks/BlockRegistry.cs` — Bảng tra cứu danh mục khối, hàm `CreateDefault()` cài đặt Quy tắc R5 (phá Stone rơi Cobblestone, Grass rơi Dirt, Leaves rơi None).
+    - `Game/Assets/_Project/Scripts/Domain/World/Chunk.cs` — Cấu trúc dữ liệu khối 16x64x16 với mảng 1D tối ưu hóa cache, quản lý cờ trạng thái bẩn `IsDirty` và kiểm tra biên tọa độ nghiêm ngặt.
+    - `Game/Assets/_Project/Scripts/Domain/World/FlatTerrainGenerator.cs` — Thực thi `ITerrainGenerator` (Strategy Pattern) cho địa hình phẳng phục vụ kiểm thử và sandbox.
+    - `Game/Assets/_Project/Scripts/Domain/World/PerlinTerrainGenerator.cs` — Thực thi `ITerrainGenerator` bằng thuật toán nhiễu Perlin thuần C# tất định kết hợp đa thức nội suy mượt bậc 5 (không phụ thuộc UnityEngine).
+    - `Game/Assets/_Project/Scripts/Domain/World/World.cs` — Thực thi `IWorldReader` và `IWorldWriter` (quan hệ Hợp thành `World ◆ Chunk`), quản lý sinh/tải Chunk, kiểm soát biên độ cao (Quy tắc R3) và phát sự kiện `BlockChanged` (Observer Pattern).
+    - `Game/Assets/_Project/Scripts/Domain/World/ChunkMeshData.cs` — Gói hình học lưới 3D thuần C# (`Vertices`, `Triangles`, `Uvs`, `Normals`) sử dụng `System.Numerics`.
+    - `Game/Assets/_Project/Scripts/Domain/World/ChunkMeshBuilder.cs` — Thuật toán dựng lưới với Face Culling loại bỏ mặt khuất kề nhau, giảm mạnh số lượng tam giác render.
+    - `Game/Assets/_Project/Tests/EditMode/WorldDomainTests.cs` — Bộ 9 Unit Test NUnit kiểm thử độc lập phân hệ World.
+  - **Phân hệ Survival & Presentation (Thành viên B):**
+    - `Game/Assets/_Project/Scripts/Domain/Items/ToolType.cs` — Enum phân loại công cụ (`None`, `Pickaxe`, `Axe`, `Shovel`, `Sword`).
+    - `Game/Assets/_Project/Scripts/Domain/Items/ItemUseContext.cs` — Parameter Object đóng gói ngữ cảnh kích hoạt vật phẩm.
+    - `Game/Assets/_Project/Scripts/Domain/Items/Item.cs` — Lớp trừu tượng định nghĩa vật phẩm, kiểm soát số lượng xếp chồng 1..64 (Quy tắc R6) và phương thức thuần ảo đa hình `Use()`.
+    - `Game/Assets/_Project/Scripts/Domain/Items/BlockItem.cs` — Lớp con kế thừa `Item`, ghi đè `Use()` kiểm tra ô trống và đặt khối vào thế giới (Quy tắc R2).
+    - `Game/Assets/_Project/Scripts/Domain/Items/ToolItem.cs` — Lớp con kế thừa `Item` với `MaxStackSize = 1` (Quy tắc R6), tính thời gian đào theo loại công cụ và độ cứng khối (Quy tắc R4).
+    - `Game/Assets/_Project/Scripts/Domain/Items/FoodItem.cs` — Lớp con kế thừa `Item` với thuộc tính hồi điểm đói và máu (Quy tắc R8).
+    - `Game/Assets/_Project/Scripts/Domain/Items/ItemRegistry.cs` — Sổ đăng ký danh mục toàn bộ vật phẩm (BlockItem, ToolItem, FoodItem).
+    - `Game/Assets/_Project/Scripts/Domain/Items/ItemStack.cs` — Quan hệ Kết tập `ItemStack ◇ Item`, đóng gói phương thức `Add()` và `Remove()` chống tràn stack.
+    - `Game/Assets/_Project/Scripts/Domain/Items/Inventory.cs` — Quản lý 36 ô túi đồ (9 Hotbar + 27 ô chính), tự động cộng dồn trước khi chiếm ô mới, chọn ô Hotbar, sự kiện `InventoryChanged` và phương thức `RemoveItem` atomic (Quy tắc R10).
+    - `Game/Assets/_Project/Tests/EditMode/InventoryAndItemsTests.cs` — Bộ 6 Unit Test NUnit kiểm thử đa hình vật phẩm và logic túi đồ.
+    - `Game/Assets/_Project/Scripts/Presentation/World/ChunkView.cs` — MonoBehaviour chuyển đổi `ChunkMeshData` sang `UnityEngine.Mesh` gán vào MeshFilter & MeshCollider.
+    - `Game/Assets/_Project/Scripts/Presentation/Player/FirstPersonPlayerController.cs` — MonoBehaviour điều khiển FPS camera, di chuyển/nhảy/bay theo `IGameMode.CanFly` (phân quyền tác nhân) và đổi ô Hotbar qua phím 1..9 / con lăn chuột.
+    - `docs/superpowers/plans/2026-11-07-t1-world-and-inventory.md` — Kế hoạch triển khai chi tiết Tuần T1.
+- **Chỉnh sửa (Changed):**
+  - Không
+- **Xóa bỏ (Removed):**
+  - Không
+- **Giải thích OOP / AI (dùng khi vấn đáp):**
+  - **Kế thừa, Đa hình & Liskov Substitution (Tiêu chí 14):** `BlockItem`, `ToolItem`, `FoodItem` kế thừa lớp cha `Item`, ghi đè phương thức `Use()` để thể hiện các hành vi nghiệp vụ đặc thù nhưng đều có thể thay thế hoàn hảo cho `Item` trong `ItemStack` và `Inventory`.
+  - **Quan hệ Hợp thành & Kết tập (Tiêu chí 6):** `World ◆ Chunk` và `Inventory ◆ ItemStack` (Hợp thành - quản lý vòng đời trực tiếp); `ItemStack ◇ Item` (Kết tập - ngăn xếp chỉ giữ tham chiếu tới định nghĩa vật phẩm).
+  - **Strategy Pattern (Tiêu chí 9, 10, 11):** Thuật toán sinh địa hình phân tách thành `FlatTerrainGenerator` và `PerlinTerrainGenerator` cùng thực thi `ITerrainGenerator`, dễ dàng thay đổi chiến lược sinh thế giới lúc runtime.
+  - **Observer Pattern (Tiêu chí 9, 10, 11):** Sử dụng C# event `World.BlockChanged` và `Inventory.InventoryChanged` giúp tầng Domain phát tín hiệu mà không hề biết tới UI hay GameObject tầng Presentation.
+  - **Single Responsibility & Face Culling (Tiêu chí 15):** `Chunk` chỉ giữ dữ liệu khối, `ChunkMeshBuilder` đảm nhận dựng hình và khử mặt khuất tiếp xúc giữa các khối kề nhau.
+  - **Atomic Transaction (Quy tắc R10):** Phương thức `Inventory.RemoveItem` kiểm tra đủ tổng số lượng trước khi tiến hành trừ, đảm bảo nguyên tắc chế tạo không bị mất vật phẩm nửa chừng nếu thiếu tài nguyên.
 - **Loại cập nhật:** Minor
 - **Phân hệ:** Shared/Setup (Hợp đồng chung giữa Thành viên A & Thành viên B)
 - **Thêm mới (Added):**

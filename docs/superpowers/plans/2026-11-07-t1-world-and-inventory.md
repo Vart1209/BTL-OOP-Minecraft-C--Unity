@@ -33,11 +33,11 @@
 - **Tests to write:**
   - `Game/Assets/_Project/Tests/EditMode/WorldDomainTests.cs` (phần BlockType & BlockRegistry)
 - **Steps:**
-  1. Viết failing tests kiểm tra tạo `BlockType`, tính đóng gói, `GetTextureIndex` cho 6 mặt, và `BlockRegistry.CreateDefault()` (Quy tắc R5: rơi đồ đúng loại).
-  2. Chạy test xác nhận FAIL (RED).
-  3. Cài đặt `BlockFace.cs`, `BlockType.cs`, `BlockRegistry.cs`.
-  4. Chạy test xác nhận PASS (GREEN).
-  5. Commit `feat(world): add block types and default block registry`.
+- [x] 1. Viết failing tests kiểm tra tạo `BlockType`, tính đóng gói, `GetTextureIndex` cho 6 mặt, và `BlockRegistry.CreateDefault()` (Quy tắc R5: rơi đồ đúng loại).
+- [x] 2. Chạy test xác nhận FAIL (RED).
+- [x] 3. Cài đặt `BlockFace.cs`, `BlockType.cs`, `BlockRegistry.cs`.
+- [x] 4. Chạy test xác nhận PASS (GREEN).
+- [x] 5. Commit `feat(world): add block types and default block registry`.
 
 ### Task 1.2: Hệ thống Chunk & Thuật toán Sinh địa hình (`Chunk`, `FlatTerrainGenerator`, `PerlinTerrainGenerator`)
 - **Files to create:**
@@ -49,11 +49,11 @@
   - Kiểm tra `FlatTerrainGenerator` (Bedrock -> Dirt -> Grass -> Air).
   - Kiểm tra `PerlinTerrainGenerator` (thuần C#, tất định cùng seed, dải chiều cao 16..40).
 - **Steps:**
-  1. Viết failing tests.
-  2. Chạy test xác nhận FAIL (RED).
-  3. Cài đặt `Chunk.cs`, `FlatTerrainGenerator.cs`, `PerlinTerrainGenerator.cs`.
-  4. Chạy test xác nhận PASS (GREEN).
-  5. Commit `feat(world): add chunk data structure and terrain generators`.
+  - [x] 1. Viết failing tests.
+  - [x] 2. Chạy test xác nhận FAIL (RED).
+  - [x] 3. Cài đặt `Chunk.cs`, `FlatTerrainGenerator.cs`, `PerlinTerrainGenerator.cs`.
+  - [x] 4. Chạy test xác nhận PASS (GREEN).
+  - [x] 5. Commit `feat(world): add chunk data structure and terrain generators`.
 
 ### Task 1.3: Quản lý Thế giới Voxel & Dựng Lưới Mesh Face Culling (`World`, `ChunkMeshData`, `ChunkMeshBuilder`)
 - **Files to create:**
@@ -64,12 +64,12 @@
   - Kiểm tra `World` (GenerateChunk, SetBlock, GetBlock qua biên âm/dương, Quy tắc R3, Observer `BlockChanged`).
   - Kiểm tra `ChunkMeshBuilder` Face Culling: 1 block = 6 mặt (24 đỉnh / 36 indices); 2 block kề nhau = 10 mặt (40 đỉnh / 60 indices).
 - **Steps:**
-  1. Viết failing tests.
-  2. Chạy test xác nhận FAIL (RED).
-  3. Cài đặt `World.cs`, `ChunkMeshData.cs`, `ChunkMeshBuilder.cs`.
-  4. Chạy test xác nhận PASS (GREEN).
-  5. Commit `feat(world): add voxel world manager and mesh builder with face culling`.
-  6. Merge nhánh `feature/t1-a-world-chunk` vào `dev`.
+  - [x] 1. Viết failing tests.
+  - [x] 2. Chạy test xác nhận FAIL (RED).
+  - [x] 3. Cài đặt `World.cs`, `ChunkMeshData.cs`, `ChunkMeshBuilder.cs`.
+  - [x] 4. Chạy test xác nhận PASS (GREEN).
+  - [x] 5. Commit `feat(world): add voxel world manager and mesh builder with face culling`.
+  - [x] 6. Merge nhánh `feature/t1-a-world-chunk` vào `dev`.
 
 ---
 
@@ -87,11 +87,11 @@
 - **Tests to write:**
   - `Game/Assets/_Project/Tests/EditMode/InventoryAndItemsTests.cs` (phần Item hierarchy)
 - **Steps:**
-  1. Viết failing tests kiểm tra đa hình `Item.Use()`, Quy tắc R6 (công cụ stack 1, khối stack 64), Quy tắc R2 (đặt khối), Quy tắc R4 (tính thời gian đào công cụ).
-  2. Chạy test xác nhận FAIL (RED).
-  3. Cài đặt 7 files trên.
-  4. Chạy test xác nhận PASS (GREEN).
-  5. Commit `feat(survival): add polymorphic item hierarchy and item registry`.
+  - [x] 1. Viết failing tests kiểm tra đa hình `Item.Use()`, Quy tắc R6 (công cụ stack 1, khối stack 64), Quy tắc R2 (đặt khối), Quy tắc R4 (tính thời gian đào công cụ).
+  - [x] 2. Chạy test xác nhận FAIL (RED).
+  - [x] 3. Cài đặt 7 files trên.
+  - [x] 4. Chạy test xác nhận PASS (GREEN).
+  - [x] 5. Commit `feat(survival): add polymorphic item hierarchy and item registry`.
 
 ### Task 2.2: Ngăn xếp vật phẩm & Quản lý Túi đồ (`ItemStack`, `Inventory`)
 - **Files to create:**
@@ -101,25 +101,25 @@
   - Kiểm tra `ItemStack` (kết tập, `Add` trả phần dư, `Remove` kiểm tra âm).
   - Kiểm tra `Inventory` (36 ô, 9 ô Hotbar, `AddItem` cộng dồn rồi sang ô mới, `RemoveItem` kiểm tra đủ số lượng, `SelectHotbarSlot`, sự kiện `InventoryChanged`).
 - **Steps:**
-  1. Viết failing tests.
-  2. Chạy test xác nhận FAIL (RED).
-  3. Cài đặt `ItemStack.cs` và `Inventory.cs`.
-  4. Chạy test xác nhận PASS (GREEN).
-  5. Commit `feat(survival): add itemstack and inventory with hotbar selection`.
+  - [x] 1. Viết failing tests.
+  - [x] 2. Chạy test xác nhận FAIL (RED).
+  - [x] 3. Cài đặt `ItemStack.cs` và `Inventory.cs`.
+  - [x] 4. Chạy test xác nhận PASS (GREEN).
+  - [x] 5. Commit `feat(survival): add itemstack and inventory with hotbar selection`.
 
 ### Task 2.3: Lớp Trình diễn Tầng Presentation (`ChunkView`, `FirstPersonPlayerController`) & Tích hợp
 - **Files to create:**
   - `Game/Assets/_Project/Scripts/Presentation/World/ChunkView.cs`
   - `Game/Assets/_Project/Scripts/Presentation/Player/FirstPersonPlayerController.cs`
 - **Steps:**
-  1. Cài đặt `ChunkView.cs` (chuyển `ChunkMeshData` thành `UnityEngine.Mesh`, gán cho `MeshFilter` & `MeshCollider`).
-  2. Cài đặt `FirstPersonPlayerController.cs` (di chuyển, nhảy, bay theo gamemode, cuộn phím Hotbar).
-  3. Commit `feat(presentation): add chunk view mesh renderer and first person player controller`.
-  4. Merge nhánh `feature/t1-b-items-inventory` vào `dev`.
+  - [x] 1. Cài đặt `ChunkView.cs` (chuyển `ChunkMeshData` thành `UnityEngine.Mesh`, gán cho `MeshFilter` & `MeshCollider`).
+  - [x] 2. Cài đặt `FirstPersonPlayerController.cs` (di chuyển, nhảy, bay theo gamemode, cuộn phím Hotbar).
+  - [x] 3. Commit `feat(presentation): add chunk view mesh renderer and first person player controller`.
+  - [x] 4. Merge nhánh `feature/t1-b-items-inventory` vào `dev`.
 
 ---
 
 ## Phase 3: Hoàn tất, Cập nhật CHANGELOG & Đẩy mã nguồn
-- Chạy toàn bộ test suite (EditMode NUnit tests) đảm bảo 100% test cases (≥ 16 tests mới) đều PASS.
-- Cập nhật `CHANGELOG.md` lên phiên bản `v0.3.0` ghi nhận toàn bộ tiến độ Tuần T1.
-- Push cả nhánh `dev` và các nhánh tính năng `feature/*` lên `origin`.
+- [x] Chạy toàn bộ test suite (EditMode NUnit tests) đảm bảo 100% test cases (≥ 16 tests mới) đều PASS.
+- [x] Cập nhật `CHANGELOG.md` lên phiên bản `v0.3.0` ghi nhận toàn bộ tiến độ Tuần T1.
+- [x] Push cả nhánh `dev` và các nhánh tính năng `feature/*` lên `origin`.
