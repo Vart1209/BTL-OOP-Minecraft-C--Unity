@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using NUnit.Framework;
+using Minecraft.Application.World;
 using Minecraft.Domain.Blocks;
 using Minecraft.Domain.Contracts;
+using Minecraft.Domain.Items;
 using Minecraft.Domain.World;
 
 namespace Minecraft.Domain.Tests
@@ -71,6 +73,123 @@ namespace Minecraft.Domain.Tests
 
             Assert.Throws<ArgumentOutOfRangeException>(() => raycaster.Raycast(Vector3.Zero, Vector3.UnitX, -1f));
             Assert.Throws<ArgumentOutOfRangeException>(() => raycaster.Raycast(Vector3.Zero, Vector3.UnitX, 0f));
+        }
+
+        private sealed class TestGameMode : IGameMode
+        {
+            public string ModeName { get; set; } = "Survival";
+            public bool CanTakeDamage { get; set; } = true;
+            public bool ConsumesItemsOnPlace { get; set; } = true;
+            public bool InstantBreak { get; set; } = false;
+            public bool CanFly { get; set; } = false;
+
+            public bool CanBreakBlock(BlockId blockId)
+            {
+                if (ModeName == "Survival") return blockId != BlockId.Bedrock && blockId != BlockId.Air;
+                return blockId != BlockId.Air;
+            }
+        }
+
+        [Test]
+        public void BlockInteractionService_TryBreakBlock_EnforcesRuleR1_R5_R12()
+        {
+            BlockRegistry blockRegistry = BlockRegistry.CreateDefault();
+            ItemRegistry itemRegistry = ItemRegistry.CreateDefault(blockRegistry);
+            FlatTerrainGenerator flatGen = new FlatTerrainGenerator(surfaceHeight: 1); // Y=0 Bedrock, Y>0 Air
+            World.World world = new World.World(flatGen);
+            world.GenerateChunk(new ChunkCoord(0, 0));
+
+            BlockInteractionService service = new BlockInteractionService(world, world, blockRegistry, itemRegistry);
+            Inventory inventory = new Inventory();
+            TestGameMode survivalMode = new TestGameMode { ModeName = "Survival", ConsumesItemsOnPlace = true };
+            TestGameMode creativeMode = new TestGameMode { ModeName = "Creative", ConsumesItemsOnPlace = false, InstantBreak = true };
+
+            // 1. Quy tắc R1: Survival không thể phá Bedrock (tại 0, 0, 0)
+            bool breakBedrockSurvival = service.TryBreakBlock(new BlockPos(0, 0, 0), inventory, survivalMode);
+            Assert.That(breakBedrockSurvival, Is.False);
+            Assert.That(world.GetBlock(new BlockPos(0, 0, 0)), Is.EqualTo(BlockId.Bedrock));
+
+            // 2. Quy tắc R12: Creative phá được Bedrock
+            bool breakBedrockCreative = service.TryBreakBlock(new BlockPos(0, 0, 0), inventory, creativeMode);
+            Assert.That(breakBedrockCreative, Is.True);
+            Assert.That(world.GetBlock(new BlockPos(0, 0, 0)), Is.EqualTo(BlockId.Air));
+
+            // 3. Quy tắc R5: Phá Stone rơi Cobblestone vào Inventory ở Survival
+            world.SetBlock(new BlockPos(5, 5, 5), BlockId.Stone);
+            bool breakStone = service.TryBreakBlock(new BlockPos(5, 5, 5), inventory, survivalMode);
+            Assert.That(breakStone, Is.True);
+            Assert.That(world.GetBlock(new BlockPos(5, 5, 5)), Is.EqualTo(BlockId.Air));
+            Assert.That(inventory.CountItem(ItemId.Cobblestone), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void BlockInteractionService_TryPlaceBlock_EnforcesRuleR2_R12()
+        {
+            BlockRegistry blockRegistry = BlockRegistry.CreateDefault();
+            ItemRegistry itemRegistry = ItemRegistry.CreateDefault(blockRegistry);
+            FlatTerrainGenerator flatGen = new FlatTerrainGenerator(surfaceHeight: 1);
+            World.World world = new World.World(flatGen);
+            world.GenerateChunk(new ChunkCoord(0, 0));
+
+            BlockInteractionService service = new BlockInteractionService(world, world, blockRegistry, itemRegistry);
+            Inventory inventory = new Inventory();
+            TestGameMode survivalMode = new TestGameMode { ModeName = "Survival", ConsumesItemsOnPlace = true };
+            TestGameMode creativeMode = new TestGameMode { ModeName = "Creative", ConsumesItemsOnPlace = false };
+
+            Item woodItem = itemRegistry.Get(ItemId.Wood);
+            inventory.AddItem(woodItem, 2);
+            inventory.SelectHotbarSlot(0); // Đang cầm Wood
+
+            BlockPos playerFeet = new BlockPos(3, 1, 3);
+            BlockPos playerHead = new BlockPos(3, 2, 3);
+
+            // Quy tắc R2: Không cho phép đặt đè lên chân hoặc đầu người chơi
+            bool placeOnFeet = service.TryPlaceBlock(playerFeet, playerFeet, playerHead, inventory, survivalMode);
+            Assert.That(placeOnFeet, Is.False);
+            bool placeOnHead = service.TryPlaceBlock(playerHead, playerFeet, playerHead, inventory, survivalMode);
+            Assert.That(placeOnHead, Is.False);
+
+            // Đặt vào vị trí hợp lệ ở Survival -> thành công và trừ 1 Wood
+            BlockPos validPos = new BlockPos(4, 2, 3); // Y=2 là Air (vì surfaceHeight=1)
+            bool placeSuccessSurvival = service.TryPlaceBlock(validPos, playerFeet, playerHead, inventory, survivalMode);
+            Assert.That(placeSuccessSurvival, Is.True);
+            Assert.That(world.GetBlock(validPos), Is.EqualTo(BlockId.Wood));
+            Assert.That(inventory.CountItem(ItemId.Wood), Is.EqualTo(1)); // 2 - 1 = 1
+
+            // Đặt ở Creative -> thành công và KHÔNG trừ item
+            BlockPos validPos2 = new BlockPos(4, 3, 3);
+            bool placeSuccessCreative = service.TryPlaceBlock(validPos2, playerFeet, playerHead, inventory, creativeMode);
+            Assert.That(placeSuccessCreative, Is.True);
+            Assert.That(world.GetBlock(validPos2), Is.EqualTo(BlockId.Wood));
+            Assert.That(inventory.CountItem(ItemId.Wood), Is.EqualTo(1)); // Giữ nguyên 1
+        }
+
+        [Test]
+        public void ChunkLoadService_UpdatesActiveChunksCorrectly()
+        {
+            FlatTerrainGenerator flatGen = new FlatTerrainGenerator(surfaceHeight: 1);
+            World.World world = new World.World(flatGen);
+            ChunkLoadService chunkService = new ChunkLoadService(world, renderDistanceInChunks: 1);
+
+            // Ban đầu chưa có chunk nào
+            Assert.That(chunkService.LoadedChunks.Count, Is.EqualTo(0));
+
+            // Cập nhật tại (0, 0) với bán kính 1 -> tải khối hộp 3x3 = 9 chunk
+            ChunkLoadResult result1 = chunkService.UpdateActiveChunks(new ChunkCoord(0, 0));
+            Assert.That(result1.NewlyLoaded.Count, Is.EqualTo(9));
+            Assert.That(result1.Unloaded.Count, Is.EqualTo(0));
+            Assert.That(chunkService.LoadedChunks.Count, Is.EqualTo(9));
+
+            // Người chơi đứng yên gọi lại -> không sinh mới và không gỡ chunk
+            ChunkLoadResult resultSame = chunkService.UpdateActiveChunks(new ChunkCoord(0, 0));
+            Assert.That(resultSame.NewlyLoaded.Count, Is.EqualTo(0));
+            Assert.That(resultSame.Unloaded.Count, Is.EqualTo(0));
+
+            // Người chơi di chuyển rất xa tới (10, 10) -> gỡ 9 chunk cũ, nạp 9 chunk mới
+            ChunkLoadResult resultFar = chunkService.UpdateActiveChunks(new ChunkCoord(10, 10));
+            Assert.That(resultFar.NewlyLoaded.Count, Is.EqualTo(9));
+            Assert.That(resultFar.Unloaded.Count, Is.EqualTo(9));
+            Assert.That(chunkService.LoadedChunks.Count, Is.EqualTo(9));
         }
     }
 }
