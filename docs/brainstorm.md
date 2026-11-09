@@ -16,7 +16,7 @@
 | Phạm vi | **Phương án A – Survival lõi** + Creative (làm sau khi Survival chạy) |
 | Kiến trúc | **Phương án B – 3 tầng**, mỗi tầng 1 asmdef, Domain là C# thuần |
 | Đồ họa | Texture import sẵn trong Editor (MVP) → đọc resource pack lúc chạy (Nên có) → URP post-processing |
-| Phiên bản Unity | **Unity 6.3 LTS (6000.3.28f1)**, cả 2 máy dùng đúng bản này |
+| Phiên bản Unity | **Unity 6 (`6000.6.8f1` hoặc bản mới nhất thống nhất)**, cả 2 máy dùng đúng một bản |
 | Ghi nhật ký | Mọi thay đổi ghi vào `CHANGELOG.md` theo quy tắc trong `AGENTS.md` |
 
 **Còn mở:** cách hiểu "phân quyền tác nhân" ([S2] dòng 4). Đề xuất: phân quyền theo GameMode (Survival / Creative). Nên hỏi lại GV.
@@ -170,7 +170,7 @@ MINECRAFT/                      (gốc repo)
 Mỗi người: 1 phân hệ, khoảng 6 Use Case, 2 pattern, 2 sơ đồ tuần tự, ≥10 test, ≥10 commit. Mọi PR do người kia review.
 
 ### 5.2 Thiết lập một lần
-1. Cùng một bản Unity (6000.3.28f1); commit `Game/ProjectSettings/ProjectVersion.txt`.
+1. Cùng một bản Unity (`6000.6.8f1` hoặc bản mới nhất thống nhất giữa 2 máy); commit `Game/ProjectSettings/ProjectVersion.txt`.
 2. `.gitignore` theo template Unity của GitHub (đặt trong `Game/`) + `.gitignore` gốc cho `.DS_Store`.
 3. *Project Settings → Editor*: Asset Serialization = **Force Text**, Version Control = **Visible Meta Files**. Luôn commit `.meta` kèm asset.
 4. Chưa cần Git LFS (texture 16×16 rất nhẹ); GitHub chặn file >100MB.
