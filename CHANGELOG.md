@@ -5,6 +5,21 @@ Tất cả các thay đổi của dự án được AI và các thành viên ghi
 
 ---
 
+## [v1.0.1] - 2026-11-09 23:10 (+07:00) — Sửa lỗi CS1061 thiếu hàm `MobCombatService.ProcessHostileAttacks` khi biên dịch trong Unity Editor
+- **Loại cập nhật:** Patch
+- **Phân hệ:** Survival (B) & Presentation (Shared)
+- **Thêm mới (Added):**
+  - `Game/Assets/_Project/Scripts/Application/Survival/MobCombatService.cs` — Bổ sung phương thức `ProcessHostileAttacks(IReadOnlyList<Mob> activeMobs, Player player)` để khớp với lời gọi tại `GameBootstrap.cs(199,32)` và sơ đồ tuần tự số 4.
+  - `Game/Assets/_Project/Tests/EditMode/MobCombatAndGameModeServiceTests.cs` — Bổ sung test case thứ 74 `MobCombat_ProcessHostileAttacks_DamagesPlayerOnlyFromHostileMobsInRange`.
+- **Chỉnh sửa (Changed):**
+  - Không
+- **Xóa bỏ (Removed):**
+  - Không
+- **Giải thích OOP / AI (dùng khi vấn đáp):**
+  - Đảm bảo tính nhất quán hợp đồng giữa tầng `Presentation` (`GameBootstrap`) và dịch vụ điều phối Use Case ở tầng `Application` (`MobCombatService`), biên dịch sạch 100% (`0 Error`) cả 4 assembly trong Unity 6000.6.8f1.
+
+---
+
 ## [v1.0.0] - 2026-11-09 23:03 (+07:00) — Phát hành Chính thức v1.0.0: Hoàn thiện 100% Dự án, Công cụ Tự động Dựng Scene 1-Click, Bộ Sơ đồ UML (Use Case, Class, 4 Sequence Diagrams) & Cẩm nang Bảo vệ 20/20 Tiêu chí Barem [S2]
 - **Loại cập nhật:** Major
 - **Phân hệ:** World (A), Survival (B) & Shared/Setup
