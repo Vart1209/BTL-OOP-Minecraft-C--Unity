@@ -159,5 +159,78 @@ namespace Minecraft.Domain.Tests
             // Đỉnh Y >= 45 luôn là Air (vì maxHeight = 40)
             Assert.That(perlinGen.GetBlockAt(new BlockPos(32, 45, -15), seed), Is.EqualTo(BlockId.Air));
         }
+
+        [Test]
+        public void World_GenerateAndGetSetBlock_SupportsNegativeCoordsAndRaisesEvent()
+        {
+            ITerrainGenerator flatGen = new FlatTerrainGenerator(surfaceHeight: 10);
+            World.World world = new World.World(flatGen, seed: 100);
+
+            List<BlockChangedEventArgs> raisedEvents = new List<BlockChangedEventArgs>();
+            world.BlockChanged += e => raisedEvents.Add(e);
+
+            // Sinh chunk tại tọa độ âm
+            ChunkCoord negChunk = new ChunkCoord(-1, -2);
+            Chunk chunk = world.GenerateChunk(negChunk);
+            Assert.That(chunk, Is.Not.Null);
+            Assert.That(world.TryGetChunk(negChunk, out Chunk retrieved), Is.True);
+            Assert.That(retrieved, Is.SameAs(chunk));
+
+            // Đọc khối ở tọa độ âm: worldPos (-5, 10, -20) nằm trong chunk (-1, -2)
+            BlockPos posInNegChunk = new BlockPos(-5, 10, -20);
+            Assert.That(world.GetBlock(posInNegChunk), Is.EqualTo(BlockId.Grass));
+
+            // Quy tắc R3: SetBlock ngoài biên Y bị từ chối
+            Assert.That(world.SetBlock(new BlockPos(0, -1, 0), BlockId.Stone), Is.False);
+            Assert.That(world.SetBlock(new BlockPos(0, 64, 0), BlockId.Stone), Is.False);
+            Assert.That(raisedEvents.Count, Is.EqualTo(0));
+
+            // SetBlock hợp lệ làm thay đổi khối và phát sự kiện Observer
+            bool setSuccess = world.SetBlock(posInNegChunk, BlockId.Stone);
+            Assert.That(setSuccess, Is.True);
+            Assert.That(world.GetBlock(posInNegChunk), Is.EqualTo(BlockId.Stone));
+            Assert.That(raisedEvents.Count, Is.EqualTo(1));
+            Assert.That(raisedEvents[0].OldBlock, Is.EqualTo(BlockId.Grass));
+            Assert.That(raisedEvents[0].NewBlock, Is.EqualTo(BlockId.Stone));
+        }
+
+        [Test]
+        public void ChunkMeshBuilder_FaceCulling_SingleBlockHas6Faces_TwoAdjacentBlocksHave10Faces()
+        {
+            BlockRegistry registry = BlockRegistry.CreateDefault();
+            ITerrainGenerator emptyGen = new FlatTerrainGenerator(surfaceHeight: 1); // Y=0 Bedrock, Y>0 Air
+            World.World world = new World.World(emptyGen);
+            ChunkCoord coord = new ChunkCoord(0, 0);
+            Chunk chunk = world.GenerateChunk(coord);
+
+            // Dọn sạch chunk thành Air
+            for (int x = 0; x < Chunk.Width; x++)
+            {
+                for (int y = 0; y < Chunk.Height; y++)
+                {
+                    for (int z = 0; z < Chunk.Width; z++)
+                    {
+                        chunk.SetBlock(x, y, z, BlockId.Air);
+                    }
+                }
+            }
+
+            ChunkMeshBuilder builder = new ChunkMeshBuilder(world, registry, atlasGridSize: 16);
+
+            // Trường hợp 1: 1 khối đơn lẻ ở giữa chunk
+            chunk.SetBlock(5, 5, 5, BlockId.Stone);
+            ChunkMeshData meshSingle = builder.BuildMesh(chunk);
+            // 6 mặt = 24 đỉnh (vertices), 36 chỉ số tam giác (indices)
+            Assert.That(meshSingle.Vertices.Count, Is.EqualTo(24));
+            Assert.That(meshSingle.Triangles.Count, Is.EqualTo(36));
+
+            // Trường hợp 2: Đặt thêm 1 khối kề mặt phía Bắc (Z + 1) tại (5, 5, 6)
+            chunk.SetBlock(5, 5, 6, BlockId.Stone);
+            ChunkMeshData meshTwoAdjacent = builder.BuildMesh(chunk);
+            // Mặt tiếp xúc giữa 2 khối bị loại bỏ (Face Culling): 12 mặt - 2 mặt ẩn = 10 mặt
+            // 10 mặt = 40 đỉnh, 60 chỉ số tam giác
+            Assert.That(meshTwoAdjacent.Vertices.Count, Is.EqualTo(40));
+            Assert.That(meshTwoAdjacent.Triangles.Count, Is.EqualTo(60));
+        }
     }
 }
