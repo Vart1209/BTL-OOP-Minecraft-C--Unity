@@ -48,6 +48,19 @@ namespace Minecraft.Domain.Items
         }
 
         /// <summary>
+        /// Xóa sạch toàn bộ vật phẩm trong tất cả các ô của túi đồ.
+        /// </summary>
+        public void Clear()
+        {
+            for (int i = 0; i < SlotCount; i++)
+            {
+                _slots[i] = ItemStack.Empty;
+            }
+
+            InventoryChanged?.Invoke();
+        }
+
+        /// <summary>
         /// Lấy thông tin ngăn xếp vật phẩm tại một ô chỉ định.
         /// </summary>
         public ItemStack GetSlot(int index)

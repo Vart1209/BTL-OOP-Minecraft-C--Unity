@@ -51,6 +51,9 @@ namespace Minecraft.Domain.Items
             throw new KeyNotFoundException($"Không tìm thấy vật phẩm với mã '{id}'.");
         }
 
+        /// <summary>Bí danh lấy đối tượng vật phẩm theo mã định danh.</summary>
+        public Item GetItem(ItemId id) => Get(id);
+
         /// <summary>
         /// Thử lấy vật phẩm theo mã định danh.
         /// </summary>

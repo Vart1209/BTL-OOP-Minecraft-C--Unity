@@ -21,6 +21,9 @@ namespace Minecraft.Domain.Items
         /// <summary>Định nghĩa thuộc tính vật phẩm được chứa trong ngăn xếp.</summary>
         public Item Definition => _definition;
 
+        /// <summary>Bí danh cho thuộc tính định nghĩa vật phẩm.</summary>
+        public Item Item => _definition;
+
         /// <summary>Số lượng vật phẩm hiện có trong ngăn xếp.</summary>
         public int Count => _count;
 
