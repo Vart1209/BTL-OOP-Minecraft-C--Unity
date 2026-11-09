@@ -5,6 +5,24 @@ Tất cả các thay đổi của dự án được AI và các thành viên ghi
 
 ---
 
+## [v1.0.3] - 2026-11-09 23:45 (+07:00) — Khởi tạo và lưu trữ 4 Scene chuẩn (`MainMenu`, `Game`, `Sandbox_A`, `Sandbox_B`) vào `Assets/_Project/Scenes/`
+- **Loại cập nhật:** Patch
+- **Phân hệ:** Shared/Setup & Presentation
+- **Thêm mới (Added):**
+  - `Game/Assets/_Project/Scenes/Game.unity` — Scene chơi chính gắn sẵn `GameBootstrap`, `WorldRoot` (`WorldView`, `ResourcePackView`), `Player`, `HUD`, `Directional Light` (`DayNightView`, `AtmosphereFogView`).
+  - `Game/Assets/_Project/Scenes/MainMenu.unity` — Scene khởi đầu dự án.
+  - `Game/Assets/_Project/Scenes/Sandbox_A.unity` — Scene thử nghiệm phân hệ World (Thành viên A).
+  - `Game/Assets/_Project/Scenes/Sandbox_B.unity` — Scene thử nghiệm phân hệ Survival (Thành viên B).
+  - `Game/ProjectSettings/SceneTemplateSettings.json` — Cấu hình Scene Template của Unity Editor.
+- **Chỉnh sửa (Changed):**
+  - Không
+- **Xóa bỏ (Removed):**
+  - Không
+- **Giải thích OOP / AI (dùng khi vấn đáp):**
+  - Hoàn tất đóng gói toàn bộ tài nguyên Scene vật lý được sinh tự động bởi `EditorSceneSetup`, đảm bảo khi clone repo về máy bất kỳ chỉ cần mở `Assets/_Project/Scenes/Game.unity` và nhấn Play là chạy ngay không cần cấu hình lại.
+
+---
+
 ## [v1.0.2] - 2026-11-09 23:18 (+07:00) — Ghép lưới Texture Atlas 16×16 từ gói OptimumRealism_64x, nạp đúng gói mặc định từ config.json và tinh chỉnh sương mù
 - **Loại cập nhật:** Patch
 - **Phân hệ:** World (A) & Presentation (Shared)
