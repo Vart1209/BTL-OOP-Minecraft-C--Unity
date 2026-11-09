@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using Minecraft.Domain.Entities;
 using Minecraft.Domain.Entities.Mobs;
@@ -30,6 +31,35 @@ namespace Minecraft.Application.Survival
         {
             if (attackRange <= 0f) throw new ArgumentOutOfRangeException(nameof(attackRange));
             _attackRange = attackRange;
+        }
+
+        /// <summary>
+        /// Duyệt danh sách sinh vật đang hoạt động và cho các quái vật thù địch (<c>IsHostile == true</c>) tấn công người chơi nếu trong tầm đánh.
+        /// </summary>
+        /// <param name="activeMobs">Danh sách Mob đang hoạt động trong thế giới.</param>
+        /// <param name="player">Thực thể người chơi.</param>
+        /// <returns>Số lượng đòn tấn công trúng đích trong lượt kiểm tra.</returns>
+        public int ProcessHostileAttacks(IReadOnlyList<Mob> activeMobs, Player player)
+        {
+            if (activeMobs == null || player == null || !player.IsAlive)
+            {
+                return 0;
+            }
+
+            int attacksCount = 0;
+            for (int i = 0; i < activeMobs.Count; i++)
+            {
+                Mob mob = activeMobs[i];
+                if (mob != null && mob.IsAlive && mob.IsHostile)
+                {
+                    if (TryMobAttackPlayer(mob, player))
+                    {
+                        attacksCount++;
+                    }
+                }
+            }
+
+            return attacksCount;
         }
 
         /// <summary>

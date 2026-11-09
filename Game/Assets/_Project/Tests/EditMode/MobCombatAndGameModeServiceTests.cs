@@ -79,6 +79,22 @@ namespace Minecraft.Domain.Tests
         }
 
         [Test]
+        public void MobCombat_ProcessHostileAttacks_DamagesPlayerOnlyFromHostileMobsInRange()
+        {
+            var combatService = new MobCombatService(attackRange: 2.0f);
+            var player = new Player(new Vector3(0, 10, 0), new SurvivalMode(), maxHealth: 20);
+
+            var zombieNear = new Zombie(new Vector3(1.0f, 10, 0));     // Hostile, trong tầm -> gây 3 sát thương
+            var zombieFar = new Zombie(new Vector3(15.0f, 10, 0));     // Hostile, ngoài tầm -> 0 sát thương
+            var cowNear = new Cow(new Vector3(0.5f, 10, 0));           // Passive -> 0 sát thương
+
+            int hitCount = combatService.ProcessHostileAttacks(new Mob[] { zombieNear, zombieFar, cowNear }, player);
+
+            Assert.That(hitCount, Is.EqualTo(1));
+            Assert.That(player.Health.CurrentHealth, Is.EqualTo(20 - zombieNear.AttackDamage));
+        }
+
+        [Test]
         public void GameModeService_SwitchesGameModesSeamlessly()
         {
             var player = new Player(new Vector3(0f, 0f, 0f), new SurvivalMode());
