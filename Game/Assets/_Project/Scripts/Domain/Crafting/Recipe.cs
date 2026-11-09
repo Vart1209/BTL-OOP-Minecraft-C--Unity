@@ -64,3 +64,4 @@ namespace Minecraft.Domain.Crafting
         }
     }
 }
+

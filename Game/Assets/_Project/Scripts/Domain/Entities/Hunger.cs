@@ -26,6 +26,9 @@ namespace Minecraft.Domain.Entities
         /// <summary>Chỉ số điểm đói hiện tại (0..Max).</summary>
         public int Current => _current;
 
+        /// <summary>Bí danh cho chỉ số điểm đói hiện tại.</summary>
+        public int CurrentHunger => _current;
+
         /// <summary>Chỉ số điểm đói tối đa (mặc định = 20).</summary>
         public int Max => _max;
 
@@ -86,6 +89,20 @@ namespace Minecraft.Domain.Entities
         }
 
         /// <summary>
+        /// Tiêu hao điểm đói (Bí danh của <see cref="Reduce"/>).
+        /// </summary>
+        public void ConsumeHunger(int amount) => Reduce(amount);
+
+        /// <summary>
+        /// Thiết lập trực tiếp chỉ số đói hiện tại (dùng khi khôi phục dữ liệu lưu thế giới).
+        /// </summary>
+        public void SetCurrentHunger(int value)
+        {
+            _current = Math.Clamp(value, 0, _max);
+            HungerChanged?.Invoke(_current, _max);
+        }
+
+        /// <summary>
         /// Khôi phục toàn bộ thanh đói về mức tối đa (dùng khi hồi sinh).
         /// </summary>
         public void ResetToMax()
@@ -133,3 +150,4 @@ namespace Minecraft.Domain.Entities
         }
     }
 }
+

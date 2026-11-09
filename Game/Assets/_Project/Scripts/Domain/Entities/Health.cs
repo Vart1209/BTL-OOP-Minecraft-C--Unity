@@ -23,6 +23,9 @@ namespace Minecraft.Domain.Entities
         /// <summary>Lượng máu hiện tại (0..Max).</summary>
         public int Current => _current;
 
+        /// <summary>Bí danh cho lượng máu hiện tại.</summary>
+        public int CurrentHealth => _current;
+
         /// <summary>Lượng máu tối đa của thực thể.</summary>
         public int Max => _max;
 
@@ -47,6 +50,23 @@ namespace Minecraft.Domain.Entities
 
             _max = maxHealth;
             _current = maxHealth;
+        }
+
+        /// <summary>
+        /// Gây sát thương trực tiếp lên thực thể (không kiểm tra gameMode).
+        /// </summary>
+        public void TakeDamage(int amount)
+        {
+            TakeDamage(amount, null);
+        }
+
+        /// <summary>
+        /// Thiết lập trực tiếp lượng máu hiện tại (dùng khi khôi phục dữ liệu thế giới).
+        /// </summary>
+        public void SetCurrentHealth(int value)
+        {
+            _current = Math.Clamp(value, 0, _max);
+            HealthChanged?.Invoke(_current, _max);
         }
 
         /// <summary>
@@ -106,3 +126,4 @@ namespace Minecraft.Domain.Entities
         }
     }
 }
+
