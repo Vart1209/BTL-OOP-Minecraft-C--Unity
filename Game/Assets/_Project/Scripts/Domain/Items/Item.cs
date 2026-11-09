@@ -62,3 +62,4 @@ namespace Minecraft.Domain.Items
         public abstract bool Use(ItemUseContext context);
     }
 }
+

@@ -27,3 +27,4 @@ namespace Minecraft.Domain.Items
         Sword = 4
     }
 }
+

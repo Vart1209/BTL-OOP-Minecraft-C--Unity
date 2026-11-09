@@ -31,3 +31,4 @@ namespace Minecraft.Domain.Blocks
         West = 5
     }
 }
+

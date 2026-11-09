@@ -5,6 +5,21 @@ Tất cả các thay đổi của dự án được AI và các thành viên ghi
 
 ---
 
+## [v0.3.1] - 2026-11-09 21:52 (+07:00) — Khôi phục tiêu đề phiên bản v0.2.0 trong CHANGELOG và đồng bộ định dạng xuống dòng cuối file
+- **Loại cập nhật:** Patch
+- **Phân hệ:** Shared/Setup
+- **Thêm mới (Added):**
+  - Không
+- **Chỉnh sửa (Changed):**
+  - `CHANGELOG.md` — Khôi phục dòng phân cách và tiêu đề `## [v0.2.0]` bị ghi đè khi ghép nhật ký Tuần T1.
+  - Chuẩn hóa ký tự xuống dòng cuối file (`insert_final_newline = true` theo `.editorconfig`) cho 19 file C# của Tuần T1.
+- **Xóa bỏ (Removed):**
+  - Không
+- **Giải thích OOP / AI (dùng khi vấn đáp):**
+  - Duy trì tính toàn vẹn của tài liệu truy vết phiên bản (`CHANGELOG.md`) và tuân thủ đồng nhất Coding Convention (`.editorconfig`) giữa các thành viên (Tiêu chí 15, 20).
+
+---
+
 ## [v0.3.0] - 2026-11-09 20:20 (+07:00) — Hoàn thành Tuần T1: Triển khai Hệ thống World/Chunk/Mesh (Phân hệ A) và Items/Inventory/Player (Phân hệ B)
 - **Loại cập nhật:** Minor
 - **Phân hệ:** World (A) & Survival (B)
@@ -45,6 +60,10 @@ Tất cả các thay đổi của dự án được AI và các thành viên ghi
   - **Observer Pattern (Tiêu chí 9, 10, 11):** Sử dụng C# event `World.BlockChanged` và `Inventory.InventoryChanged` giúp tầng Domain phát tín hiệu mà không hề biết tới UI hay GameObject tầng Presentation.
   - **Single Responsibility & Face Culling (Tiêu chí 15):** `Chunk` chỉ giữ dữ liệu khối, `ChunkMeshBuilder` đảm nhận dựng hình và khử mặt khuất tiếp xúc giữa các khối kề nhau.
   - **Atomic Transaction (Quy tắc R10):** Phương thức `Inventory.RemoveItem` kiểm tra đủ tổng số lượng trước khi tiến hành trừ, đảm bảo nguyên tắc chế tạo không bị mất vật phẩm nửa chừng nếu thiếu tài nguyên.
+
+---
+
+## [v0.2.0] - 2026-11-07 11:09 (+07:00) — Hoàn thành Tuần T0: Chuẩn hóa Unity 6000.6.8f1, tích hợp Resource Pack và xây dựng Bộ Hợp đồng chung tầng Domain
 - **Loại cập nhật:** Minor
 - **Phân hệ:** Shared/Setup (Hợp đồng chung giữa Thành viên A & Thành viên B)
 - **Thêm mới (Added):**

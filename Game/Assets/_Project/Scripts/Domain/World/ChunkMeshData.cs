@@ -45,3 +45,4 @@ namespace Minecraft.Domain.World
         }
     }
 }
+

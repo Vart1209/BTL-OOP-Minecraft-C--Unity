@@ -59,3 +59,4 @@ namespace Minecraft.Domain.Items
         }
     }
 }
+
