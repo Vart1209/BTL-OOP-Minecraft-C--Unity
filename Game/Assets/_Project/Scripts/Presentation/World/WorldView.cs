@@ -26,10 +26,13 @@ namespace Minecraft.Presentation.World
 
         private readonly Dictionary<ChunkCoord, ChunkView> _activeViews = new Dictionary<ChunkCoord, ChunkView>();
 
+        /// <summary>Vật liệu địa hình hiện tại đang áp dụng cho các Chunk.</summary>
+        public Material TerrainMaterial => _terrainMaterial;
+
         /// <summary>
         /// Khởi tạo phụ thuộc của WorldView từ GameBootstrap.
         /// </summary>
-        public void Initialize(Domain.World.World world, BlockRegistry blockRegistry, Material terrainMaterial)
+        public void Initialize(Domain.World.World world, BlockRegistry blockRegistry, Material terrainMaterial = null)
         {
             _world = world ?? throw new ArgumentNullException(nameof(world));
             _blockRegistry = blockRegistry ?? throw new ArgumentNullException(nameof(blockRegistry));
@@ -37,6 +40,22 @@ namespace Minecraft.Presentation.World
             _meshBuilder = new ChunkMeshBuilder(_world, _blockRegistry, atlasGridSize: 16);
 
             _world.BlockChanged += OnBlockChanged;
+        }
+
+        /// <summary>
+        /// Cập nhật lại vật liệu (Material) hoặc Texture2D cho toàn bộ các ChunkView đang hiển thị khi đổi Resource Pack.
+        /// </summary>
+        public void SetTerrainMaterial(Material material)
+        {
+            _terrainMaterial = material;
+            foreach (var kvp in _activeViews)
+            {
+                MeshRenderer renderer = kvp.Value.GetComponent<MeshRenderer>();
+                if (renderer != null && _terrainMaterial != null)
+                {
+                    renderer.sharedMaterial = _terrainMaterial;
+                }
+            }
         }
 
         private void OnDestroy()

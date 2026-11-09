@@ -15,6 +15,7 @@ using Minecraft.Domain.Items;
 using Minecraft.Domain.World;
 using Minecraft.Infrastructure.Config;
 using Minecraft.Infrastructure.Persistence;
+using Minecraft.Infrastructure.ResourcePacks;
 using Minecraft.Presentation.Environment;
 using Minecraft.Presentation.Player;
 using Minecraft.Presentation.UI;
@@ -31,7 +32,7 @@ namespace Minecraft.Presentation.Bootstrap
     /// <list type="bullet">
     ///   <item><b>Nói KHÔNG với Singleton (Barem [S2] Tiêu chí 4 &amp; 16):</b> Dự án tuyệt đối không dùng <c>Instance</c> tĩnh cho logic nghiệp vụ. Toàn bộ các dịch vụ (Service), kho lưu trữ (Repository), nhà máy (Factory) và thực thể (Entity) được khởi tạo và tiêm thủ công (Pure DI) tại đây.</item>
     ///   <item><b>Liên kết 4 tầng kiến trúc:</b> Tầng Presentation nắm quyền điều phối vòng đời của các tầng dưới (Domain, Application, Infrastructure).</item>
-    ///   <item><b>Xử lý ngoại lệ tự phục hồi (Tiêu chí 19):</b> Đọc file cấu hình ngoài bằng <see cref="ConfigLoader"/> có <c>try-catch</c> an toàn, đảm bảo game luôn chạy được kể cả khi thiếu file cấu hình.</item>
+    ///   <item><b>Xử lý ngoại lệ tự phục hồi (Tiêu chí 19):</b> Đọc file cấu hình ngoài bằng <see cref="ConfigLoader"/> và nạp Resource Pack bằng <see cref="FolderResourcePackProvider"/> có <c>try-catch</c> an toàn kèm fallback <see cref="BuiltInAtlasProvider"/>, đảm bảo game luôn chạy được kể cả khi thiếu file cấu hình hoặc thư mục tài nguyên.</item>
     /// </list>
     /// </para>
     /// </summary>
@@ -39,9 +40,11 @@ namespace Minecraft.Presentation.Bootstrap
     {
         [Header("Views liên kết trong Scene")]
         [SerializeField] private WorldView _worldView;
+        [SerializeField] private ResourcePackView _resourcePackView;
         [SerializeField] private PlayerInteractionController _playerController;
         [SerializeField] private SandboxHudView _hudView;
         [SerializeField] private DayNightView _dayNightView;
+        [SerializeField] private AtmosphereFogView _atmosphereFogView;
 
         // Domain Registries & Models
         private BlockRegistry _blockRegistry;
@@ -56,10 +59,12 @@ namespace Minecraft.Presentation.Bootstrap
         private BlockInteractionService _blockInteractionService;
         private CraftingService _craftingService;
         private SurvivalService _survivalService;
+        private DeathDropService _deathDropService;
         private MobSpawnerService _mobSpawnerService;
         private MobCombatService _combatService;
         private GameModeService _gameModeService;
         private WorldPersistenceService _persistenceService;
+        private ResourcePackService _resourcePackService;
 
         private void Awake()
         {
@@ -93,6 +98,7 @@ namespace Minecraft.Presentation.Bootstrap
             _blockInteractionService = new BlockInteractionService(_world, _world, _blockRegistry, _itemRegistry);
             _craftingService = new CraftingService(_recipeBook);
             _survivalService = new SurvivalService();
+            _deathDropService = new DeathDropService();
             _combatService = new MobCombatService(attackRange: 2.0f);
             _gameModeService = new GameModeService();
 
@@ -102,21 +108,39 @@ namespace Minecraft.Presentation.Bootstrap
             IWorldRepository worldRepo = new JsonWorldRepository();
             _persistenceService = new WorldPersistenceService(worldRepo, _itemRegistry);
 
-            // 6. Theo dõi các khối bị sửa đổi để phục vụ lưu thế giới
+            // Khởi tạo hệ thống Resource Pack (Strategy Pattern + Fallback an toàn)
+            string resourcePacksRoot = Path.Combine(UnityEngine.Application.streamingAssetsPath, "ResourcePacks");
+            ITextureAtlasProvider fallbackProvider = new BuiltInAtlasProvider();
+            ITextureAtlasProvider folderProvider = new FolderResourcePackProvider(resourcePacksRoot, fallbackProvider);
+            _resourcePackService = new ResourcePackService(folderProvider);
+
+            // 6. Đăng ký lắng nghe sự kiện tử vong để rơi đồ ở chế độ Survival và hồi sinh (Quy tắc R9)
+            _player.Health.Died += () =>
+            {
+                int droppedStacks = _deathDropService.DropInventoryOnDeath(_player);
+                Debug.Log($"[DeathDrop] Người chơi tử vong! Đã làm rơi {droppedStacks} ngăn xếp vật phẩm và hồi sinh về SpawnPoint.");
+            };
+
+            // 7. Theo dõi các khối bị sửa đổi để phục vụ lưu thế giới
             _world.BlockChanged += (pos, oldId, newId) =>
             {
                 _modifiedBlocks[pos] = newId;
             };
 
-            // 7. Cung cấp vật phẩm khởi đầu cho người chơi để thử nghiệm Sandbox
+            // 8. Cung cấp vật phẩm khởi đầu cho người chơi để thử nghiệm Sandbox
             _player.Inventory.AddItem(_itemRegistry.Get(ItemId.Dirt), 32);
             _player.Inventory.AddItem(_itemRegistry.Get(ItemId.Wood), 16);
             _player.Inventory.AddItem(_itemRegistry.Get(ItemId.Apple), 5);
 
-            // 8. Tiêm phụ thuộc vào các Views hiển thị (Presentation Layer)
+            // 9. Tiêm phụ thuộc vào các Views hiển thị (Presentation Layer)
             if (_worldView != null)
             {
                 _worldView.Initialize(_world, _blockRegistry);
+            }
+
+            if (_resourcePackView != null)
+            {
+                _resourcePackView.Initialize(_resourcePackService, _worldView);
             }
 
             if (_playerController != null)
@@ -134,16 +158,23 @@ namespace Minecraft.Presentation.Bootstrap
                 _dayNightView.Initialize(_dayNightCycle);
             }
 
-            Debug.Log($"[GameBootstrap] Khởi tạo hệ thống thành công! Seed: {seed}, GameMode: {_player.CurrentGameMode.ModeName}");
+            if (_atmosphereFogView != null)
+            {
+                _atmosphereFogView.Initialize(_dayNightCycle);
+            }
+
+            Debug.Log($"[GameBootstrap] Khởi tạo hệ thống thành công! Seed: {seed}, GameMode: {_player.CurrentGameMode.ModeName}, ResourcePack: {_resourcePackService.CurrentPack?.PackId}");
         }
 
         private void Update()
         {
             float dt = Time.deltaTime;
 
-            // Cập nhật nhịp sinh học và môi trường
+            // Cập nhật nhịp sinh học, thu nhặt vật phẩm rơi và môi trường
             _dayNightCycle?.Tick(dt);
             _survivalService?.Tick(dt, _player);
+            _deathDropService?.Tick(dt);
+            _deathDropService?.CollectNearbyDrops(_player, DeathDropService.DefaultPickupRadius);
 
             bool isTargetable = _player.CurrentGameMode.CanTakeDamage;
             _mobSpawnerService?.Tick(dt, _player.Position, isTargetable);
@@ -166,6 +197,23 @@ namespace Minecraft.Presentation.Bootstrap
                     _gameModeService.SwitchToSurvival(_player);
                 }
                 Debug.Log($"[GameMode] Đã chuyển sang: {_player.CurrentGameMode.ModeName}");
+            }
+
+            // F2: Đổi nhanh Resource Pack giữa default (16x) và OptimumRealism_64x (Strategy + Observer Pattern demo)
+            if (Input.GetKeyDown(KeyCode.F2) && _resourcePackService != null)
+            {
+                string currentId = _resourcePackService.CurrentPack != null
+                    ? _resourcePackService.CurrentPack.PackId
+                    : BuiltInAtlasProvider.DefaultPackId;
+
+                string nextPackId = string.Equals(currentId, "OptimumRealism_64x", System.StringComparison.OrdinalIgnoreCase)
+                    ? BuiltInAtlasProvider.DefaultPackId
+                    : "OptimumRealism_64x";
+
+                bool switched = _resourcePackService.SwitchPack(nextPackId);
+                Debug.Log(switched
+                    ? $"[ResourcePack] Đã chuyển sang gói: {_resourcePackService.CurrentPack.PackId} ({_resourcePackService.CurrentPack.TileResolution}x)"
+                    : $"[ResourcePack] Chuyển gói '{nextPackId}' thất bại!");
             }
 
             // F5: Lưu nhanh thế giới (UC05 demo)
