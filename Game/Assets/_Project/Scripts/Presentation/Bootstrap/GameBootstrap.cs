@@ -120,7 +120,10 @@ namespace Minecraft.Presentation.Bootstrap
             string resourcePacksRoot = Path.Combine(UnityEngine.Application.streamingAssetsPath, "ResourcePacks");
             ITextureAtlasProvider fallbackProvider = new BuiltInAtlasProvider();
             ITextureAtlasProvider folderProvider = new FolderResourcePackProvider(resourcePacksRoot, fallbackProvider);
-            _resourcePackService = new ResourcePackService(folderProvider);
+            string initialPackId = config.ResourcePack != null && !string.IsNullOrWhiteSpace(config.ResourcePack.ActivePack)
+                ? config.ResourcePack.ActivePack
+                : "OptimumRealism_64x";
+            _resourcePackService = new ResourcePackService(folderProvider, initialPackId);
 
             // 6. Đăng ký lắng nghe sự kiện tử vong để rơi đồ ở chế độ Survival và hồi sinh (Quy tắc R9)
             _player.Health.Died += () =>
