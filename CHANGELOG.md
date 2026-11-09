@@ -5,6 +5,38 @@ Tất cả các thay đổi của dự án được AI và các thành viên ghi
 
 ---
 
+## [v0.6.0] - 2026-11-09 22:48 (+07:00) — Hoàn thành Tuần T4: Hoàn thiện tầng "Nên có" & Đông cứng tính năng (Đổi Resource Pack Runtime, Rơi đồ khi chết & Tự động thu nhặt, Sương mù & Ánh sáng môi trường)
+- **Loại cập nhật:** Minor
+- **Phân hệ:** World (A), Survival (B) & Presentation (Shared)
+- **Thêm mới (Added):**
+  - **Phân hệ World & Infrastructure A (Thành viên A):**
+    - `Game/Assets/_Project/Scripts/Domain/ResourcePacks/ResourcePackManifest.cs` — Thực thể bất biến lưu thông tin gói tài nguyên (`PackId`, `DisplayName`, `Description`, `PackFormat`, `TileResolution` 16x/64x, `BlockTexturePaths`), kiểm tra hợp lệ đầu vào nghiêm ngặt.
+    - `Game/Assets/_Project/Scripts/Domain/Contracts/ITextureAtlasProvider.cs` — Hợp đồng Strategy Pattern cho việc truy vấn và nạp gói tài nguyên (`ProviderName`, `GetAvailablePacks`, `LoadPack`).
+    - `Game/Assets/_Project/Scripts/Infrastructure/ResourcePacks/BuiltInAtlasProvider.cs` — Chiến lược 1: gói mặc định `default` 16×16 tích hợp sẵn với đầy đủ ánh xạ texture chuẩn cho toàn bộ `BlockId`.
+    - `Game/Assets/_Project/Scripts/Infrastructure/ResourcePacks/FolderResourcePackProvider.cs` — Chiến lược 2: quét thư mục `StreamingAssets/ResourcePacks`, đọc `pack.mcmeta` bằng `System.Text.Json` bọc `try-catch` an toàn, kiểm tra các tệp `.png` trong `assets/minecraft/textures/block/` và tự động fallback sang `BuiltInAtlasProvider` khi thiếu thư mục hoặc lỗi tệp (Tiêu chí 19).
+    - `Game/Assets/_Project/Scripts/Application/World/ResourcePackService.cs` — Dịch vụ điều phối Use Case UC06b (Đổi Resource Pack lúc chạy), cho phép hoán đổi `ITextureAtlasProvider` runtime và phát sự kiện Observer `ResourcePackChanged`.
+    - `Game/Assets/_Project/Tests/EditMode/ResourcePackTests.cs` — 5 Unit Test NUnit kiểm thử `ResourcePackManifest`, `BuiltInAtlasProvider`, `FolderResourcePackProvider` (đọc thư mục thật/tạm, xử lý `pack.mcmeta` hỏng JSON, thư mục không tồn tại) và `ResourcePackService.SwitchPack`.
+  - **Phân hệ Survival & Presentation B (Thành viên B):**
+    - `Game/Assets/_Project/Scripts/Domain/Entities/DroppedItemEntity.cs` — Thực thể vật phẩm rơi trên mặt đất kế thừa `Entity` (`DroppedItemEntity : Entity`), đóng gói `ItemStack Payload`, bộ đếm `DespawnTimeSeconds` (mặc định 300s) và ghi đè `Tick(float deltaTime)` để tự hủy khi hết hạn.
+    - `Game/Assets/_Project/Scripts/Application/Survival/DeathDropService.cs` — Dịch vụ quản lý `ActiveDrops`, thực thi `DropInventoryOnDeath(Player)` (làm rơi toàn bộ 36 ô túi đồ và xóa sạch túi đồ khi chết ở Survival rồi hồi sinh về `SpawnPoint`, nhưng giữ nguyên túi đồ ở Creative) và `CollectNearbyDrops(Player, pickupRadius = 2.0f)` tự động thu nhặt vật phẩm khi lại gần.
+    - `Game/Assets/_Project/Scripts/Presentation/World/ResourcePackView.cs` — MonoBehaviour lắng nghe `ResourcePackService.ResourcePackChanged`, đọc byte ảnh bằng `File.ReadAllBytes` + `ImageConversion.LoadImage` với `FilterMode.Point` và áp dụng lên Material của `WorldView`.
+    - `Game/Assets/_Project/Scripts/Presentation/Environment/AtmosphereFogView.cs` — MonoBehaviour lắng nghe `DayNightCycle.PhaseChanged` và `TimeChanged` để nội suy mượt mà màu sương mù (`RenderSettings.fogColor`, `RenderSettings.fogDensity`) và ánh sáng môi trường (`RenderSettings.ambientLight`) giữa Ban ngày, Hoàng hôn, Ban đêm và Bình minh.
+    - `Game/Assets/_Project/Tests/EditMode/DeathDropAndAtmosphereTests.cs` — 5 Unit Test NUnit kiểm thử kế thừa và hết hạn của `DroppedItemEntity`, rơi đồ khi chết ở Survival vs giữ đồ ở Creative, và tự động nhặt lại đồ trong bán kính `2.0f`.
+    - `docs/superpowers/plans/2026-11-30-t4-resource-packs-drops-polish.md` — Kế hoạch triển khai chi tiết Tuần T4.
+- **Chỉnh sửa (Changed):**
+  - `Game/Assets/_Project/Scripts/Domain/Environment/DayNightCycle.cs` — Bổ sung bí danh sự kiện `TimeChanged` bên cạnh `TimeUpdated` phục vụ đồng bộ hiệu ứng môi trường.
+  - `Game/Assets/_Project/Scripts/Presentation/World/WorldView.cs` — Bổ sung thuộc tính `TerrainMaterial` và phương thức `SetTerrainMaterial` để cập nhật chất liệu đồng loạt cho các `ChunkView` khi đổi gói tài nguyên.
+  - `Game/Assets/_Project/Scripts/Presentation/Bootstrap/GameBootstrap.cs` — Khởi tạo `FolderResourcePackProvider` (kèm fallback `BuiltInAtlasProvider`), `ResourcePackService`, `DeathDropService`, tự động rơi đồ khi `Player.Health.Died` và nối phím tắt `F2` để đổi nhanh giữa gói `default` (16x) và `OptimumRealism_64x` (64x) ngay trong game.
+- **Xóa bỏ (Removed):**
+  - Không
+- **Giải thích OOP / AI (dùng khi vấn đáp):**
+  - **Strategy Pattern & Đảo ngược phụ thuộc (Tiêu chí 9, 10, 11, 16):** `ResourcePackService` làm việc hoàn toàn qua giao diện `ITextureAtlasProvider`, cho phép chuyển đổi giữa gói tích hợp sẵn (`BuiltInAtlasProvider`) và gói đọc từ đĩa (`FolderResourcePackProvider`) lúc runtime mà không sửa đổi tầng nghiệp vụ.
+  - **Observer Pattern (Tiêu chí 9, 10, 11):** Khi gọi `ResourcePackService.SwitchPack`, sự kiện `ResourcePackChanged` tự động kích hoạt `ResourcePackView` nạp lại Texture2D; tương tự, `DayNightCycle` phát sự kiện `PhaseChanged` và `TimeChanged` để `AtmosphereFogView` nội suy sương mù mà Domain vẫn thuần C# 100%.
+  - **Kế thừa, Đa hình & Phân quyền theo GameMode (Tiêu chí 4, 6, 14):** Mở rộng cây kế thừa `Entity` với `DroppedItemEntity : Entity` bên cạnh `Player` và `Mob`; `DeathDropService` dựa vào `IGameMode.ConsumesItemsOnPlace` để phân biệt hành vi rơi toàn bộ túi đồ ở Survival với việc bảo toàn vật phẩm ở Creative.
+  - **Xử lý ngoại lệ an toàn (Tiêu chí 19):** `FolderResourcePackProvider` bọc `try-catch` nhiều lớp khi đọc `pack.mcmeta` và quét thư mục, tự động phục hồi về mô tả mặc định hoặc ủy quyền sang `BuiltInAtlasProvider` khi gặp JSON hỏng hoặc thiếu thư mục.
+
+---
+
 ## [v0.5.0] - 2026-11-09 22:36 (+07:00) — Hoàn thành Tuần T3: Mốc 2 – MVP Xong (Lưu/Tải JSON, Đọc cấu hình try-catch, Phân cấp Mob đa hình & AI, Vòng lặp Ngày/Đêm, Spawner R11, GameModes & GameBootstrap Pure DI)
 - **Loại cập nhật:** Minor
 - **Phân hệ:** World (A), Survival (B) & Presentation (Shared)
