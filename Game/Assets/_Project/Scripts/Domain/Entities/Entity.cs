@@ -50,3 +50,4 @@ namespace Minecraft.Domain.Entities
         public abstract void Tick(float deltaTime);
     }
 }
+

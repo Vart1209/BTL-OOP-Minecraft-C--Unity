@@ -94,3 +94,4 @@ namespace Minecraft.Presentation.Player
         }
     }
 }
+

@@ -77,3 +77,4 @@ namespace Minecraft.Domain.Entities
         }
     }
 }
+

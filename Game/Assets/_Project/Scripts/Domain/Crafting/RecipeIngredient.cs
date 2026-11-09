@@ -61,3 +61,4 @@ namespace Minecraft.Domain.Crafting
         public static bool operator !=(RecipeIngredient left, RecipeIngredient right) => !left.Equals(right);
     }
 }
+
