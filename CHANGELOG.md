@@ -5,6 +5,27 @@ Tất cả các thay đổi của dự án được AI và các thành viên ghi
 
 ---
 
+## [v1.0.0] - 2026-11-09 23:03 (+07:00) — Phát hành Chính thức v1.0.0: Hoàn thiện 100% Dự án, Công cụ Tự động Dựng Scene 1-Click, Bộ Sơ đồ UML (Use Case, Class, 4 Sequence Diagrams) & Cẩm nang Bảo vệ 20/20 Tiêu chí Barem [S2]
+- **Loại cập nhật:** Major
+- **Phân hệ:** World (A), Survival (B) & Shared/Setup
+- **Thêm mới (Added):**
+  - `Game/Assets/_Project/Scripts/Presentation/Bootstrap/EditorSceneSetup.cs` — Công cụ Editor (`#if UNITY_EDITOR`) cung cấp 2 menu: `Minecraft OOP -> 1. Auto-Setup Playable Game Scene` (tự động tạo `Directional Light`, `WorldRoot`, `Player` tại `(0, 42, 0)`, `HUD`, `GameBootstrap` và nối sẵn toàn bộ các `SerializedProperty` chỉ trong 1 cú nhấp chuột) và `Minecraft OOP -> 2. Generate All 4 Scenes (MainMenu, Game, Sandbox_A, Sandbox_B)`.
+  - `docs/uml/use-case-diagram.md` — Sơ đồ Use Case tổng thể bằng Mermaid (`flowchart LR`) thể hiện 3 tác nhân (`Người chơi Survival`, `Người chơi Creative`, `Hệ thống Tự động`), bảng đặc tả chi tiết 12 Use Case (6 UC Phân hệ A + 6 UC Phân hệ B) ánh xạ chính xác tới từng phương thức điều khiển, và giải thích cơ chế phân quyền tác nhân qua `IGameMode` (Đáp ứng Tiêu chí 1 & 4).
+  - `docs/uml/class-diagram.md` — Sơ đồ lớp UML tổng thể bằng Mermaid (`classDiagram`) chứa 35 lớp/interface/struct thực tế, bảng giải thích ý nghĩa thuộc tính của 22 lớp thực thể/giá trị trong tầng Domain, và bảng phân tích đủ 5 mối quan hệ OOP (Kế thừa, Thực thi, Hợp thành, Kết tập, Phụ thuộc) xuyên suốt 2 phân hệ A & B (Đáp ứng Tiêu chí 2, 5, 6).
+  - `docs/uml/sequence-diagrams.md` — Bộ 4 Sơ đồ Tuần tự (Sequence Diagrams bằng Mermaid `sequenceDiagram`) khớp 100% thứ tự gọi hàm runtime: (1) Dò tia DDA & Phá khối rơi vật phẩm, (2) Di chuyển sinh Chunk & Dựng lưới Face Culling, (3) Chế tạo vật phẩm Atomic theo R10, (4) Sinh quái ban đêm R11, chiến đấu, chết rơi đồ & hồi sinh R9 (Đáp ứng Tiêu chí 7).
+  - `docs/defense-guide.md` — Cẩm nang bảo vệ và vấn đáp toàn diện: Bảng ánh xạ 20/20 tiêu chí Barem [S2], bảng 12 quy tắc nghiệp vụ (R1–R12), phân tích 5 Design Pattern (Strategy, Observer, State, Factory, Repository), hướng dẫn thực hành trực tiếp 3 bài mở rộng code ngay tại bàn vấn đáp trong < 5 phút/bài (Tiêu chí 12), kịch bản Demo 7 bước trên máy và 10 câu hỏi vấn đáp xoáy kèm đáp án mẫu cho Thành viên A & B (Đáp ứng Tiêu chí 3, 8–20).
+  - `docs/superpowers/plans/2026-12-07-t5-final-uml-report-and-release-v1.md` — Kế hoạch triển khai chi tiết Tuần T5 & phát hành `v1.0.0`.
+- **Chỉnh sửa (Changed):**
+  - `Game/Assets/_Project/Scripts/Presentation/Bootstrap/GameBootstrap.cs` — Bổ sung tích hợp `ChunkLoadService` tự động sinh và nạp lưới Chunk theo vị trí di chuyển của người chơi (`UpdateStreamingChunks`), liên kết đầy đủ `FirstPersonPlayerController`, `PlayerInteractionController`, `SandboxHudView` và hỗ trợ phím `F1` xoay vòng cả 3 chế độ `Survival -> Creative -> Adventure`.
+  - `README.md` — Cập nhật thống kê hoàn chỉnh của phiên bản `v1.0.0` (73 Unit Tests PASS 100%, 88 files C#, 4 tầng `.asmdef`), bảng phím tắt điều khiển, hướng dẫn sử dụng menu 1-click `EditorSceneSetup` và liên kết tới toàn bộ hồ sơ UML & cẩm nang vấn đáp.
+- **Xóa bỏ (Removed):**
+  - Không
+- **Giải thích OOP / AI (dùng khi vấn đáp):**
+  - **Đồng bộ hóa 100% Thiết kế UML ↔ Mã nguồn (Tiêu chí 1–8):** Toàn bộ sơ đồ Use Case, Class Diagram (35 lớp) và 4 Sequence Diagrams được trích xuất trực tiếp từ các lớp và phương thức thực tế trong 4 assembly `Minecraft.Domain`, `Minecraft.Application`, `Minecraft.Infrastructure`, `Minecraft.Presentation`.
+  - **Pure Dependency Injection & Tự động hóa Scene (Tiêu chí 4, 16, 17):** `GameBootstrap` đóng vai trò Composition Root duy nhất khởi tạo và tiêm phụ thuộc qua constructor mà không dùng bất kỳ Singleton nào; `EditorSceneSetup` sử dụng `SerializedObject` để tự động hóa việc kết nối các View trên Unity Inspector, giúp dự án chạy ngay lập tức trên mọi máy tính.
+
+---
+
 ## [v0.6.0] - 2026-11-09 22:48 (+07:00) — Hoàn thành Tuần T4: Hoàn thiện tầng "Nên có" & Đông cứng tính năng (Đổi Resource Pack Runtime, Rơi đồ khi chết & Tự động thu nhặt, Sương mù & Ánh sáng môi trường)
 - **Loại cập nhật:** Minor
 - **Phân hệ:** World (A), Survival (B) & Presentation (Shared)
