@@ -5,6 +5,24 @@ Tất cả các thay đổi của dự án được AI và các thành viên ghi
 
 ---
 
+## [v1.0.4] - 2026-11-10 22:31 (+07:00) — Khắc phục lỗi chữ `"ENABLE CONNECTED TEXTURES"` trên cỏ, sửa góc nắng mặt trời chiếu từ dưới đất lên và ghép viền cỏ cạnh bên
+- **Loại cập nhật:** Patch
+- **Phân hệ:** World (A) & Presentation (Shared)
+- **Thêm mới (Added):**
+  - Không
+- **Chỉnh sửa (Changed):**
+  - `Game/Assets/StreamingAssets/ResourcePacks/OptimumRealism_64x/assets/minecraft/textures/block/grass_block_top.png` — Thay thế file placeholder có chữ `"ENABLE CONNECTED TEXTURES"` của OptiFine bằng texture cỏ thực tế `moss_block.png` 64×64 sạch 100%.
+  - `Game/Assets/StreamingAssets/ResourcePacks/OptimumRealism_64x/assets/minecraft/textures/block/bedrock.png` — Thay thế file có chữ `"Optimum Realism"` bằng texture đá nền `deepslate.png` 64×64 sạch.
+  - `Game/Assets/_Project/Scripts/Presentation/Environment/DayNightView.cs` — Sửa công thức góc chiếu `Directional Light` từ `(normalizedTime * 360f) - 90f` (khiến mặt trời ở góc âm `-54°` chiếu ngược từ dưới lòng đất lên lúc mới vào game làm tối mặt `Top` và gây ảo giác lõm/lồi) thành góc chiếu từ trên bầu trời xuống (`38° .. 142°`).
+  - `Game/Assets/_Project/Scripts/Presentation/World/ResourcePackView.cs` — Bổ sung `TryBuildGrassSideTile` kết hợp nền `dirt.png` với viền cỏ xanh tự nhiên phía trên (loại bỏ màu hồng xám của overlay chưa nhuộm) và thêm viền khối 1px nhẹ (`0.86x`) giúp tách biệt rõ hình khối lập phương 3D.
+  - `Game/Assets/_Project/Scripts/Domain/World/PerlinTerrainGenerator.cs` — Khuếch đại biên độ nhiễu Perlin (`* 1.6f`) để địa hình đồi núi có độ cao thấp rõ rệt hơn.
+- **Xóa bỏ (Removed):**
+  - Không
+- **Giải thích OOP / AI (dùng khi vấn đáp):**
+  - Đảm bảo tính toàn vẹn hiển thị ở tầng Presentation (`DayNightView`, `ResourcePackView`) khi kết nối với dữ liệu của tầng Domain (`DayNightCycle`, `PerlinTerrainGenerator`).
+
+---
+
 ## [v1.0.3] - 2026-11-09 23:45 (+07:00) — Khởi tạo và lưu trữ 4 Scene chuẩn (`MainMenu`, `Game`, `Sandbox_A`, `Sandbox_B`) vào `Assets/_Project/Scenes/`
 - **Loại cập nhật:** Patch
 - **Phân hệ:** Shared/Setup & Presentation

@@ -83,8 +83,8 @@ namespace Minecraft.Domain.World
             float nx = (x + (seed % 10000)) * _scale;
             float nz = (z + ((seed / 10000) % 10000)) * _scale;
 
-            // Tính 2 octave nhiễu Perlin
-            float noise = Noise2D(nx, nz) * 0.75f + Noise2D(nx * 2f, nz * 2f) * 0.25f;
+            // Tính 2 octave nhiễu Perlin và khuếch đại biên độ để đồi núi nhấp nhô tự nhiên rõ nét
+            float noise = (Noise2D(nx, nz) * 0.75f + Noise2D(nx * 2f, nz * 2f) * 0.25f) * 1.6f;
 
             // Chuẩn hóa noise về khoảng [0, 1]
             float normalized = (noise + 1f) * 0.5f;
