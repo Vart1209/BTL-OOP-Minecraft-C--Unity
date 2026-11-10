@@ -5,6 +5,28 @@ Tất cả các thay đổi của dự án được AI và các thành viên ghi
 
 ---
 
+## [v1.1.0] - 2026-11-10 23:20 (+07:00) — Big Update: Quần xã Cây sồi 3D, Hồ nước, Đỉnh tuyết, Mỏ quặng, 20 loại Block, Mob 3D, Khung chọn khối & HUD mở rộng
+- **Loại cập nhật:** Minor
+- **Phân hệ:** World (A) & Survival (B) & Presentation (Shared)
+- **Thêm mới (Added):**
+  - `Game/Assets/_Project/Tests/EditMode/WorldDomainTests.cs` — Bổ sung bài test thứ 75 `LivingWorld_ExpandedBlocksOresAndTrees_AreRegisteredAndGeneratedDeterministically` kiểm chứng 10 loại khối mới, cây sồi 3D và mỏ quặng.
+- **Chỉnh sửa (Changed):**
+  - `Game/Assets/_Project/Scripts/Domain/Contracts/BlockId.cs` & `ItemId.cs` — Mở rộng danh mục lên 20 loại khối (`CoalOre`, `IronOre`, `GoldOre`, `DiamondOre`, `Bricks`, `Glass`, `Bookshelf`, `Glowstone`, `Snow`, `Water`) và `DiamondPickaxe`.
+  - `Game/Assets/_Project/Scripts/Domain/Blocks/BlockRegistry.cs` & `ItemRegistry.cs` & `RecipeBook.cs` — Đăng ký đầy đủ 20 loại khối, vật phẩm tương ứng và 10 công thức chế tạo (`Glass`, `Bricks`, `Bookshelf`, `Glowstone`, `DiamondPickaxe`).
+  - `Game/Assets/_Project/Scripts/Domain/World/PerlinTerrainGenerator.cs` — Nâng cấp thuật toán sinh thế giới sống động: tự động mọc Cây sồi 3D (thân gỗ `Wood` + tán lá `Leaves` 5×5×3), hồ nước (`Water`), bãi cát (`Sand`), đỉnh núi tuyết (`Snow`) và phân tầng mỏ quặng (`CoalOre`, `IronOre`, `GoldOre`, `DiamondOre`).
+  - `Game/Assets/_Project/Scripts/Presentation/World/ResourcePackView.cs` — Ghép đầy đủ 23 ô Texture Atlas (`1..23`) từ gói `OptimumRealism_64x` và hệ màu Procedural 16×16.
+  - `Game/Assets/_Project/Scripts/Presentation/Environment/DayNightView.cs` — Bổ sung khối Mặt Trời và Mặt Trăng vuông kiểu Minecraft quay trên bầu trời kèm bóng đổ mềm (`LightShadows.Soft`).
+  - `Game/Assets/_Project/Scripts/Presentation/Player/FirstPersonPlayerController.cs` — Tự động khóa tâm chuột FPS (`CursorLockMode.Locked`) khi chơi và mở khóa khi bật bảng Chế tạo (`E` / `C` / `Tab` / `Esc`).
+  - `Game/Assets/_Project/Scripts/Presentation/Player/PlayerInteractionController.cs` — Bổ sung khung viền đen 3D (`LineRenderer`) bao quanh khối đang nhắm, tay cầm vật phẩm/khối 3D góc phải dưới có hoạt ảnh vung tay, và hỗ trợ nhấp chuột trái đánh Mob trực tiếp.
+  - `Game/Assets/_Project/Scripts/Presentation/Mobs/MobView.cs` & `GameBootstrap.cs` — Dựng mô hình Voxel 3D nhiều bộ phận cho Bò (`Cow`), `Zombie`, `Skeleton` kèm hiệu ứng nháy đỏ khi trúng đòn và tự động sinh đàn Bò quanh đồng cỏ / Zombie ban đêm.
+  - `Game/Assets/_Project/Scripts/Presentation/UI/SandboxHudView.cs` — Nâng cấp HUD hiển thị thanh Tim (`♥`), thanh Đói (`♦`), tên khối đang nhắm dưới tâm ngắm, Bàn chế tạo 10 công thức và Kho Khối Mở Rộng (lấy nhanh 20 loại khối vào Hotbar).
+- **Xóa bỏ (Removed):**
+  - Không
+- **Giải thích OOP / AI (dùng khi vấn đáp):**
+  - Minh chứng trực tiếp **Open/Closed Principle (OCP - Tiêu chí 12)**: Mở rộng từ 10 lên 20 loại khối, 10 công thức chế tạo và bổ sung sinh Cây cối / Quặng trong `PerlinTerrainGenerator` mà hoàn toàn không phải sửa đổi cấu trúc lưu trữ của `Chunk`, `World`, hay thuật toán `ChunkMeshBuilder`.
+
+---
+
 ## [v1.0.4] - 2026-11-10 22:31 (+07:00) — Khắc phục lỗi chữ `"ENABLE CONNECTED TEXTURES"` trên cỏ, sửa góc nắng mặt trời chiếu từ dưới đất lên và ghép viền cỏ cạnh bên
 - **Loại cập nhật:** Patch
 - **Phân hệ:** World (A) & Presentation (Shared)

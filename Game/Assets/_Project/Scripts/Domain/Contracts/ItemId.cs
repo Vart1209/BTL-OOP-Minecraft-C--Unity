@@ -28,6 +28,16 @@ namespace Minecraft.Domain.Contracts
         Planks = 8,
         CraftingTable = 9,
         Cobblestone = 10,
+        CoalOre = 11,
+        IronOre = 12,
+        GoldOre = 13,
+        DiamondOre = 14,
+        Bricks = 15,
+        Glass = 16,
+        Bookshelf = 17,
+        Glowstone = 18,
+        Snow = 19,
+        Water = 20,
 
         // --- Dải 100..199: Nguyên liệu & Công cụ (ToolItem) ---
         /// <summary>Que gỗ dùng làm cán công cụ.</summary>
@@ -44,6 +54,9 @@ namespace Minecraft.Domain.Contracts
 
         /// <summary>Rìu gỗ hỗ trợ chặt các khối gỗ nhanh hơn.</summary>
         WoodenAxe = 104,
+
+        /// <summary>Cúp kim cương siêu cấp có tốc độ khai thác nhanh nhất.</summary>
+        DiamondPickaxe = 105,
 
         // --- Dải 200..299: Thức ăn (FoodItem) ---
         /// <summary>Táo rơi ra từ tán lá cây, ăn để hồi điểm đói.</summary>

@@ -17,6 +17,7 @@ using Minecraft.Infrastructure.Config;
 using Minecraft.Infrastructure.Persistence;
 using Minecraft.Infrastructure.ResourcePacks;
 using Minecraft.Presentation.Environment;
+using Minecraft.Presentation.Mobs;
 using Minecraft.Presentation.Player;
 using Minecraft.Presentation.UI;
 using Minecraft.Presentation.World;
@@ -58,6 +59,8 @@ namespace Minecraft.Presentation.Bootstrap
         private ChunkCoord _lastPlayerChunkCoord;
         private bool _hasInitialChunkLoad;
         private readonly Dictionary<BlockPos, BlockId> _modifiedBlocks = new Dictionary<BlockPos, BlockId>();
+        private readonly Dictionary<Mob, MobView> _spawnedMobViews = new Dictionary<Mob, MobView>();
+        private float _nightZombieSpawnTimer;
 
         // Application Services
         private ChunkLoadService _chunkLoadService;
@@ -138,10 +141,15 @@ namespace Minecraft.Presentation.Bootstrap
                 _modifiedBlocks[args.Position] = args.NewBlock;
             };
 
-            // 8. Cung cấp vật phẩm khởi đầu cho người chơi để thử nghiệm Sandbox
+            // 8. Cung cấp vật phẩm khởi đầu phong phú cho người chơi để thử nghiệm Sandbox & Xây dựng
             _player.Inventory.AddItem(_itemRegistry.Get(ItemId.Dirt), 32);
             _player.Inventory.AddItem(_itemRegistry.Get(ItemId.Wood), 16);
-            _player.Inventory.AddItem(_itemRegistry.Get(ItemId.Apple), 5);
+            _player.Inventory.AddItem(_itemRegistry.Get(ItemId.Bricks), 32);
+            _player.Inventory.AddItem(_itemRegistry.Get(ItemId.Glass), 32);
+            _player.Inventory.AddItem(_itemRegistry.Get(ItemId.Glowstone), 16);
+            _player.Inventory.AddItem(_itemRegistry.Get(ItemId.Bookshelf), 16);
+            _player.Inventory.AddItem(_itemRegistry.Get(ItemId.WoodenSword), 1);
+            _player.Inventory.AddItem(_itemRegistry.Get(ItemId.Apple), 8);
 
             // 9. Tiêm phụ thuộc vào các Views hiển thị (Presentation Layer)
             if (_worldView != null)
@@ -161,12 +169,12 @@ namespace Minecraft.Presentation.Bootstrap
 
             if (_interactionController != null)
             {
-                _interactionController.Initialize(_player, _raycaster, _blockInteractionService, _survivalService);
+                _interactionController.Initialize(_player, _raycaster, _blockInteractionService, _survivalService, _combatService, _itemRegistry);
             }
 
             if (_hudView != null)
             {
-                _hudView.Initialize(_player, _recipeBook, _craftingService);
+                _hudView.Initialize(_player, _recipeBook, _craftingService, _blockRegistry, _itemRegistry, _dayNightCycle, _interactionController, _playerController);
             }
 
             if (_dayNightView != null)
@@ -182,7 +190,89 @@ namespace Minecraft.Presentation.Bootstrap
             // 10. Sinh và nạp lưới Chunk ban đầu quanh vị trí xuất phát của người chơi (UC02)
             UpdateStreamingChunks(forceUpdate: true);
 
+            // 11. Sinh đàn Bò hiền lành ban đầu quanh đồng cỏ (UC12)
+            SpawnInitialPassiveMobs();
+
             Debug.Log($"[GameBootstrap] Khởi tạo hệ thống thành công! Seed: {seed}, GameMode: {_player.CurrentGameMode.ModeName}, ResourcePack: {_resourcePackService.CurrentPack?.PackId}");
+        }
+
+        private void SpawnInitialPassiveMobs()
+        {
+            if (_mobSpawnerService == null)
+            {
+                return;
+            }
+
+            Vector2[] offsets =
+            {
+                new Vector2(6f, 8f),
+                new Vector2(-7f, 9f),
+                new Vector2(10f, -6f),
+                new Vector2(-8f, -8f)
+            };
+
+            foreach (Vector2 off in offsets)
+            {
+                float surfaceY = FindSurfaceHeightAt(Mathf.RoundToInt(off.x), Mathf.RoundToInt(off.y));
+                var spawnPos = new SysVector3(off.x, surfaceY, off.y);
+                if (_mobSpawnerService.TrySpawnPassiveMob(spawnPos, out Mob cow))
+                {
+                    EnsureMobViewExists(cow);
+                }
+            }
+        }
+
+        private float FindSurfaceHeightAt(int worldX, int worldZ)
+        {
+            for (int y = Chunk.Height - 1; y >= 1; y--)
+            {
+                BlockId b = _world.GetBlock(new BlockPos(worldX, y, worldZ));
+                if (b != BlockId.Air && b != BlockId.Leaves)
+                {
+                    return y + 1f;
+                }
+            }
+
+            return 28f;
+        }
+
+        private void EnsureMobViewExists(Mob mob)
+        {
+            if (mob == null || _spawnedMobViews.ContainsKey(mob))
+            {
+                return;
+            }
+
+            GameObject mobGo = new GameObject($"Mob_{mob.GetType().Name}");
+            MobView view = mobGo.AddComponent<MobView>();
+            view.Initialize(mob);
+            _spawnedMobViews.Add(mob, view);
+        }
+
+        private void SyncActiveMobViewsAndSurfaceSnap()
+        {
+            if (_mobSpawnerService == null)
+            {
+                return;
+            }
+
+            var active = _mobSpawnerService.ActiveMobs;
+            for (int i = 0; i < active.Count; i++)
+            {
+                Mob mob = active[i];
+                if (mob == null || !mob.IsAlive)
+                {
+                    continue;
+                }
+
+                float groundY = FindSurfaceHeightAt(Mathf.FloorToInt(mob.Position.X), Mathf.FloorToInt(mob.Position.Z));
+                if (Mathf.Abs(mob.Position.Y - groundY) > 0.05f)
+                {
+                    mob.MoveTo(new SysVector3(mob.Position.X, groundY, mob.Position.Z));
+                }
+
+                EnsureMobViewExists(mob);
+            }
         }
 
         private void Update()
@@ -197,6 +287,28 @@ namespace Minecraft.Presentation.Bootstrap
 
             bool isTargetable = _player.CurrentGameMode.CanTakeDamage;
             _mobSpawnerService?.Tick(dt, _player.Position, isTargetable);
+
+            // Tự động sinh Zombie vào ban đêm cách người chơi >= 25 block (Quy tắc R11)
+            if (_dayNightCycle != null && _dayNightCycle.IsNight && _mobSpawnerService != null)
+            {
+                _nightZombieSpawnTimer += dt;
+                if (_nightZombieSpawnTimer >= 4.0f)
+                {
+                    _nightZombieSpawnTimer = 0f;
+                    float angle = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
+                    float dist = 26f;
+                    float zx = _player.Position.X + Mathf.Cos(angle) * dist;
+                    float zz = _player.Position.Z + Mathf.Sin(angle) * dist;
+                    float zy = FindSurfaceHeightAt(Mathf.RoundToInt(zx), Mathf.RoundToInt(zz));
+                    if (_mobSpawnerService.TrySpawnZombie(_player.Position, new SysVector3(zx, zy, zz), out Mob zombie))
+                    {
+                        EnsureMobViewExists(zombie);
+                    }
+                }
+            }
+
+            SyncActiveMobViewsAndSurfaceSnap();
+
             if (_mobSpawnerService != null && _combatService != null)
             {
                 _combatService.ProcessHostileAttacks(_mobSpawnerService.ActiveMobs, _player);

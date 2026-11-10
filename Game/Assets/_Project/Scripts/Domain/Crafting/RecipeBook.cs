@@ -93,6 +93,62 @@ namespace Minecraft.Domain.Crafting
                 outputCount: 1
             ));
 
+            // 6. Chế tạo Kính (Glass): 2 Sand -> 2 Glass
+            book.AddRecipe(new Recipe(
+                recipeId: "glass_from_sand",
+                ingredients: new[] { new RecipeIngredient(ItemId.Sand, 2) },
+                outputItemId: ItemId.Glass,
+                outputCount: 2
+            ));
+
+            // 7. Chế tạo Gạch (Bricks): 2 Dirt + 1 Cobblestone -> 4 Bricks
+            book.AddRecipe(new Recipe(
+                recipeId: "bricks_from_dirt",
+                ingredients: new[]
+                {
+                    new RecipeIngredient(ItemId.Dirt, 2),
+                    new RecipeIngredient(ItemId.Cobblestone, 1)
+                },
+                outputItemId: ItemId.Bricks,
+                outputCount: 4
+            ));
+
+            // 8. Chế tạo Tủ sách (Bookshelf): 4 Planks + 1 Wood -> 2 Bookshelf
+            book.AddRecipe(new Recipe(
+                recipeId: "bookshelf",
+                ingredients: new[]
+                {
+                    new RecipeIngredient(ItemId.Planks, 4),
+                    new RecipeIngredient(ItemId.Wood, 1)
+                },
+                outputItemId: ItemId.Bookshelf,
+                outputCount: 2
+            ));
+
+            // 9. Chế tạo Đá phát sáng (Glowstone): 2 Cobblestone + 1 CoalOre -> 2 Glowstone
+            book.AddRecipe(new Recipe(
+                recipeId: "glowstone",
+                ingredients: new[]
+                {
+                    new RecipeIngredient(ItemId.Cobblestone, 2),
+                    new RecipeIngredient(ItemId.CoalOre, 1)
+                },
+                outputItemId: ItemId.Glowstone,
+                outputCount: 2
+            ));
+
+            // 10. Chế tạo Cúp Kim cương: 3 DiamondOre + 2 Wood -> 1 Diamond Pickaxe
+            book.AddRecipe(new Recipe(
+                recipeId: "diamond_pickaxe",
+                ingredients: new[]
+                {
+                    new RecipeIngredient(ItemId.DiamondOre, 3),
+                    new RecipeIngredient(ItemId.Wood, 2)
+                },
+                outputItemId: ItemId.DiamondPickaxe,
+                outputCount: 1
+            ));
+
             return book;
         }
     }

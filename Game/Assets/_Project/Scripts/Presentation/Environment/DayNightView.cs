@@ -18,18 +18,70 @@ namespace Minecraft.Presentation.Environment
     {
         private Light _sunLight;
         private DayNightCycle _cycle;
+        private Transform _sunVisual;
+        private Transform _moonVisual;
+        private Renderer _sunRenderer;
+        private Renderer _moonRenderer;
 
         [Header("Ánh sáng & Màu sắc")]
-        [SerializeField] private Color _dayColor = new Color(1f, 0.95f, 0.85f);
-        [SerializeField] private Color _sunsetColor = new Color(1f, 0.5f, 0.3f);
-        [SerializeField] private Color _nightColor = new Color(0.1f, 0.15f, 0.3f);
+        [SerializeField] private Color _dayColor = new Color(1f, 0.96f, 0.88f);
+        [SerializeField] private Color _sunsetColor = new Color(1f, 0.55f, 0.32f);
+        [SerializeField] private Color _nightColor = new Color(0.22f, 0.28f, 0.45f);
 
-        [SerializeField] private float _dayIntensity = 1.0f;
-        [SerializeField] private float _nightIntensity = 0.15f;
+        [SerializeField] private float _dayIntensity = 1.15f;
+        [SerializeField] private float _nightIntensity = 0.35f;
 
         private void Awake()
         {
             _sunLight = GetComponent<Light>();
+            if (_sunLight != null)
+            {
+                _sunLight.shadows = LightShadows.Soft;
+                _sunLight.shadowStrength = 0.65f;
+            }
+
+            CreateCelestialVisuals();
+        }
+
+        private void CreateCelestialVisuals()
+        {
+            // Tạo khối Mặt Trời vuông kiểu Minecraft trên bầu trời
+            GameObject sunGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            sunGo.name = "MinecraftSunVisual";
+            sunGo.transform.SetParent(transform, worldPositionStays: false);
+            sunGo.transform.localPosition = new Vector3(0f, 0f, -140f);
+            sunGo.transform.localScale = new Vector3(16f, 16f, 2f);
+            Collider sunCol = sunGo.GetComponent<Collider>();
+            if (sunCol != null) Destroy(sunCol);
+
+            _sunRenderer = sunGo.GetComponent<Renderer>();
+            if (_sunRenderer != null)
+            {
+                Shader unlit = Shader.Find("Unlit/Color") ?? Shader.Find("Standard");
+                Material sunMat = new Material(unlit) { color = new Color(1f, 0.94f, 0.45f, 1f) };
+                _sunRenderer.sharedMaterial = sunMat;
+                _sunRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            _sunVisual = sunGo.transform;
+
+            // Tạo khối Mặt Trăng vuông đối diện Mặt Trời
+            GameObject moonGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            moonGo.name = "MinecraftMoonVisual";
+            moonGo.transform.SetParent(transform, worldPositionStays: false);
+            moonGo.transform.localPosition = new Vector3(0f, 0f, 140f);
+            moonGo.transform.localScale = new Vector3(12f, 12f, 2f);
+            Collider moonCol = moonGo.GetComponent<Collider>();
+            if (moonCol != null) Destroy(moonCol);
+
+            _moonRenderer = moonGo.GetComponent<Renderer>();
+            if (_moonRenderer != null)
+            {
+                Shader unlit = Shader.Find("Unlit/Color") ?? Shader.Find("Standard");
+                Material moonMat = new Material(unlit) { color = new Color(0.85f, 0.92f, 1.0f, 1f) };
+                _moonRenderer.sharedMaterial = moonMat;
+                _moonRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            _moonVisual = moonGo.transform;
         }
 
         /// <summary>

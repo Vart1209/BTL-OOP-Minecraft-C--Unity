@@ -35,6 +35,18 @@ namespace Minecraft.Presentation.Player
 
         private float _verticalVelocity;
         private float _cameraPitch;
+        private bool _isUiOpen;
+
+        /// <summary>Trạng thái đang mở bảng UI (Chế tạo / Túi đồ) để tạm dừng xoay chuột FPS.</summary>
+        public bool IsUiOpen
+        {
+            get => _isUiOpen;
+            set
+            {
+                _isUiOpen = value;
+                UpdateCursorState();
+            }
+        }
 
         private void Awake()
         {
@@ -43,6 +55,11 @@ namespace Minecraft.Presentation.Player
             {
                 _cameraTransform = Camera.main.transform;
             }
+        }
+
+        private void Start()
+        {
+            UpdateCursorState();
         }
 
         /// <summary>
@@ -56,9 +73,24 @@ namespace Minecraft.Presentation.Player
 
         private void Update()
         {
-            HandleMouseLook();
+            if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Tab))
+            {
+                IsUiOpen = !_isUiOpen;
+            }
+
+            if (!_isUiOpen)
+            {
+                HandleMouseLook();
+            }
+
             HandleMovement();
             HandleHotbarInput();
+        }
+
+        private void UpdateCursorState()
+        {
+            Cursor.lockState = _isUiOpen ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = _isUiOpen;
         }
 
         private void HandleMouseLook()

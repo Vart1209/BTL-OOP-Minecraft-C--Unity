@@ -232,5 +232,49 @@ namespace Minecraft.Domain.Tests
             Assert.That(meshTwoAdjacent.Vertices.Count, Is.EqualTo(40));
             Assert.That(meshTwoAdjacent.Triangles.Count, Is.EqualTo(60));
         }
+
+        [Test]
+        public void LivingWorld_ExpandedBlocksOresAndTrees_AreRegisteredAndGeneratedDeterministically()
+        {
+            BlockRegistry registry = BlockRegistry.CreateDefault();
+            Assert.That(registry.Contains(BlockId.CoalOre), Is.True);
+            Assert.That(registry.Contains(BlockId.IronOre), Is.True);
+            Assert.That(registry.Contains(BlockId.GoldOre), Is.True);
+            Assert.That(registry.Contains(BlockId.DiamondOre), Is.True);
+            Assert.That(registry.Contains(BlockId.Bricks), Is.True);
+            Assert.That(registry.Contains(BlockId.Glass), Is.True);
+            Assert.That(registry.Contains(BlockId.Bookshelf), Is.True);
+            Assert.That(registry.Contains(BlockId.Glowstone), Is.True);
+            Assert.That(registry.Contains(BlockId.Snow), Is.True);
+            Assert.That(registry.Contains(BlockId.Water), Is.True);
+            Assert.That(registry.Get(BlockId.Glass).IsTransparent, Is.True);
+
+            ITerrainGenerator perlinGen = new PerlinTerrainGenerator(minHeight: 16, maxHeight: 38, scale: 0.05f);
+            int seed = 20261107;
+            bool foundTreeWood = false;
+            bool foundTreeLeaves = false;
+            bool foundOre = false;
+
+            for (int x = -32; x <= 32; x++)
+            {
+                for (int z = -32; z <= 32; z++)
+                {
+                    for (int y = 1; y < 44; y++)
+                    {
+                        BlockId b = perlinGen.GetBlockAt(new BlockPos(x, y, z), seed);
+                        if (b == BlockId.Wood) foundTreeWood = true;
+                        if (b == BlockId.Leaves) foundTreeLeaves = true;
+                        if (b == BlockId.CoalOre || b == BlockId.IronOre || b == BlockId.GoldOre || b == BlockId.DiamondOre)
+                        {
+                            foundOre = true;
+                        }
+                    }
+                }
+            }
+
+            Assert.That(foundTreeWood, Is.True, "Phải sinh được thân cây gỗ tự nhiên trên mặt đất.");
+            Assert.That(foundTreeLeaves, Is.True, "Phải sinh được tán lá cây tự nhiên trên đỉnh thân gỗ.");
+            Assert.That(foundOre, Is.True, "Phải sinh được mỏ quặng dưới lòng đất.");
+        }
     }
 }

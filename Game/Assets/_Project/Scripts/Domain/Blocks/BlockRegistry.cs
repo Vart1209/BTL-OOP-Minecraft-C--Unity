@@ -221,6 +221,136 @@ namespace Minecraft.Domain.Blocks
                 sideTextureIndex: 13
             ));
 
+            // Coal Ore (Quặng than)
+            registry.Register(new BlockType(
+                id: BlockId.CoalOre,
+                name: "Coal Ore",
+                isSolid: true,
+                isTransparent: false,
+                hardness: 3.0f,
+                dropItemId: ItemId.CoalOre,
+                topTextureIndex: 14,
+                bottomTextureIndex: 14,
+                sideTextureIndex: 14
+            ));
+
+            // Iron Ore (Quặng sắt)
+            registry.Register(new BlockType(
+                id: BlockId.IronOre,
+                name: "Iron Ore",
+                isSolid: true,
+                isTransparent: false,
+                hardness: 3.0f,
+                dropItemId: ItemId.IronOre,
+                topTextureIndex: 15,
+                bottomTextureIndex: 15,
+                sideTextureIndex: 15
+            ));
+
+            // Gold Ore (Quặng vàng)
+            registry.Register(new BlockType(
+                id: BlockId.GoldOre,
+                name: "Gold Ore",
+                isSolid: true,
+                isTransparent: false,
+                hardness: 3.0f,
+                dropItemId: ItemId.GoldOre,
+                topTextureIndex: 16,
+                bottomTextureIndex: 16,
+                sideTextureIndex: 16
+            ));
+
+            // Diamond Ore (Quặng kim cương)
+            registry.Register(new BlockType(
+                id: BlockId.DiamondOre,
+                name: "Diamond Ore",
+                isSolid: true,
+                isTransparent: false,
+                hardness: 3.5f,
+                dropItemId: ItemId.DiamondOre,
+                topTextureIndex: 17,
+                bottomTextureIndex: 17,
+                sideTextureIndex: 17
+            ));
+
+            // Bricks (Gạch đỏ)
+            registry.Register(new BlockType(
+                id: BlockId.Bricks,
+                name: "Bricks",
+                isSolid: true,
+                isTransparent: false,
+                hardness: 2.0f,
+                dropItemId: ItemId.Bricks,
+                topTextureIndex: 18,
+                bottomTextureIndex: 18,
+                sideTextureIndex: 18
+            ));
+
+            // Glass (Kính trong suốt)
+            registry.Register(new BlockType(
+                id: BlockId.Glass,
+                name: "Glass",
+                isSolid: true,
+                isTransparent: true,
+                hardness: 0.3f,
+                dropItemId: ItemId.Glass,
+                topTextureIndex: 19,
+                bottomTextureIndex: 19,
+                sideTextureIndex: 19
+            ));
+
+            // Bookshelf (Tủ sách: mặt trên/dưới là ván gỗ 10, mặt bên là kệ sách 20)
+            registry.Register(new BlockType(
+                id: BlockId.Bookshelf,
+                name: "Bookshelf",
+                isSolid: true,
+                isTransparent: false,
+                hardness: 1.5f,
+                dropItemId: ItemId.Bookshelf,
+                topTextureIndex: 10,
+                bottomTextureIndex: 10,
+                sideTextureIndex: 20
+            ));
+
+            // Glowstone (Đá phát sáng)
+            registry.Register(new BlockType(
+                id: BlockId.Glowstone,
+                name: "Glowstone",
+                isSolid: true,
+                isTransparent: false,
+                hardness: 0.5f,
+                dropItemId: ItemId.Glowstone,
+                topTextureIndex: 21,
+                bottomTextureIndex: 21,
+                sideTextureIndex: 21
+            ));
+
+            // Snow (Tuyết)
+            registry.Register(new BlockType(
+                id: BlockId.Snow,
+                name: "Snow Block",
+                isSolid: true,
+                isTransparent: false,
+                hardness: 0.4f,
+                dropItemId: ItemId.Snow,
+                topTextureIndex: 22,
+                bottomTextureIndex: 22,
+                sideTextureIndex: 22
+            ));
+
+            // Water (Hồ nước)
+            registry.Register(new BlockType(
+                id: BlockId.Water,
+                name: "Water",
+                isSolid: true,
+                isTransparent: true,
+                hardness: 1.0f,
+                dropItemId: ItemId.Water,
+                topTextureIndex: 23,
+                bottomTextureIndex: 23,
+                sideTextureIndex: 23
+            ));
+
             return registry;
         }
     }

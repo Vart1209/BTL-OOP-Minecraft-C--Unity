@@ -51,30 +51,191 @@ namespace Minecraft.Domain.World
         /// <inheritdoc />
         public BlockId GetBlockAt(BlockPos worldPosition, int seed)
         {
+            int x = worldPosition.X;
             int y = worldPosition.Y;
+            int z = worldPosition.Z;
+
             if (y == 0)
             {
                 return BlockId.Bedrock;
             }
 
-            int surfaceHeight = CalculateSurfaceHeight(worldPosition.X, worldPosition.Z, seed);
-
-            if (y > surfaceHeight)
+            if (y < 0 || y >= Chunk.Height)
             {
                 return BlockId.Air;
             }
 
+            int surfaceHeight = CalculateSurfaceHeight(x, z, seed);
+            const int seaLevel = 19;
+
+            // 1. Vùng phía trên mặt đất: kiểm tra hồ nước hoặc Cây sồi 3D (Thân gỗ + Tán lá)
+            if (y > surfaceHeight)
+            {
+                if (surfaceHeight < seaLevel && y <= seaLevel)
+                {
+                    return BlockId.Water;
+                }
+
+                if (y <= _maxHeight + 4)
+                {
+                    BlockId treeBlock = GetProceduralTreeBlockAt(x, y, z, seed);
+                    if (treeBlock != BlockId.Air)
+                    {
+                        return treeBlock;
+                    }
+                }
+
+                return BlockId.Air;
+            }
+
+            // 2. Lớp bề mặt địa hình theo độ cao (Quần xã Cát / Cỏ / Tuyết)
             if (y == surfaceHeight)
             {
+                if (surfaceHeight <= seaLevel + 1)
+                {
+                    return BlockId.Sand;
+                }
+
+                if (surfaceHeight >= _maxHeight - 3)
+                {
+                    return BlockId.Snow;
+                }
+
                 return BlockId.Grass;
             }
 
+            // 3. Lớp đệm ngay dưới bề mặt (3 ô Đất hoặc Cát)
             if (y >= surfaceHeight - 3)
             {
-                return BlockId.Dirt;
+                return surfaceHeight <= seaLevel + 1 ? BlockId.Sand : BlockId.Dirt;
+            }
+
+            // 4. Tầng đá sâu: phân bố mỏ quặng tự nhiên (Than, Sắt, Vàng, Kim cương)
+            return GetUndergroundStoneOrOre(x, y, z, seed);
+        }
+
+        private BlockId GetProceduralTreeBlockAt(int x, int y, int z, int seed)
+        {
+            int cellX = FloorDiv(x, 8);
+            int cellZ = FloorDiv(z, 8);
+
+            // Kiểm tra ô lưới 8x8 hiện tại và các ô lân cận để tán lá 5x5 có thể vươn qua biên ô
+            for (int dcx = -1; dcx <= 1; dcx++)
+            {
+                for (int dcz = -1; dcz <= 1; dcz++)
+                {
+                    int cx = cellX + dcx;
+                    int cz = cellZ + dcz;
+                    uint cellHash = HashCoords(cx, cz, seed);
+
+                    // Mật độ 38% ô lưới 8x8 có cây sồi
+                    if ((cellHash % 100) >= 38)
+                    {
+                        continue;
+                    }
+
+                    // Tọa độ gốc cây nằm trong khoảng [2..5] của ô 8x8 để 2 cây không bao giờ chạm nhau
+                    int treeX = cx * 8 + 2 + (int)(cellHash & 3);
+                    int treeZ = cz * 8 + 2 + (int)((cellHash >> 2) & 3);
+
+                    // Chừa khoảng trống bán kính 4 ô quanh điểm xuất phát (0, 0) của người chơi
+                    if (treeX * treeX + treeZ * treeZ <= 16)
+                    {
+                        continue;
+                    }
+
+                    int dx = Math.Abs(x - treeX);
+                    int dz = Math.Abs(z - treeZ);
+                    if (dx > 2 || dz > 2)
+                    {
+                        continue;
+                    }
+
+                    int treeBaseY = CalculateSurfaceHeight(treeX, treeZ, seed);
+                    // Chỉ mọc cây trên vùng đồi cỏ (không mọc dưới nước/bãi cát hay đỉnh núi tuyết)
+                    if (treeBaseY < 21 || treeBaseY > _maxHeight - 7)
+                    {
+                        continue;
+                    }
+
+                    int trunkHeight = 4 + (int)((cellHash >> 5) & 1); // Thân cao 4 hoặc 5 khối
+                    int relY = y - treeBaseY;
+
+                    // Thân gỗ ở chính giữa
+                    if (dx == 0 && dz == 0 && relY >= 1 && relY <= trunkHeight)
+                    {
+                        return BlockId.Wood;
+                    }
+
+                    // Tán lá tầng rộng (2 lớp 5x5 bo 4 góc)
+                    if ((relY == trunkHeight - 1 || relY == trunkHeight) && !(dx == 2 && dz == 2))
+                    {
+                        return BlockId.Leaves;
+                    }
+
+                    // Tán lá tầng đỉnh (chữ thập 3x3 trên ngọn cây)
+                    if (relY == trunkHeight + 1 && dx <= 1 && dz <= 1 && (dx + dz <= 1))
+                    {
+                        return BlockId.Leaves;
+                    }
+                }
+            }
+
+            return BlockId.Air;
+        }
+
+        private static BlockId GetUndergroundStoneOrOre(int x, int y, int z, int seed)
+        {
+            uint h = Hash3D(x, y, z, seed);
+            uint roll = h % 100;
+
+            if (y <= 10 && roll < 3)
+            {
+                return BlockId.DiamondOre;
+            }
+
+            if (y <= 18 && roll >= 3 && roll < 8)
+            {
+                return BlockId.GoldOre;
+            }
+
+            if (y <= 26 && roll >= 8 && roll < 16)
+            {
+                return BlockId.IronOre;
+            }
+
+            if (y <= 34 && roll >= 16 && roll < 26)
+            {
+                return BlockId.CoalOre;
             }
 
             return BlockId.Stone;
+        }
+
+        private static int FloorDiv(int a, int b)
+        {
+            int q = a / b;
+            int r = a % b;
+            if (r != 0 && ((a < 0) ^ (b < 0)))
+            {
+                q--;
+            }
+
+            return q;
+        }
+
+        private static uint HashCoords(int x, int z, int seed)
+        {
+            uint h = (uint)(x * 374761393 + z * 668265263 + seed * 1442695041);
+            h = (h ^ (h >> 13)) * 1274126177;
+            return h ^ (h >> 16);
+        }
+
+        private static uint Hash3D(int x, int y, int z, int seed)
+        {
+            uint h = (uint)(x * 374761393 + y * 1103515245 + z * 668265263 + seed * 1442695041);
+            h = (h ^ (h >> 13)) * 1274126177;
+            return h ^ (h >> 16);
         }
 
         private int CalculateSurfaceHeight(int x, int z, int seed)
