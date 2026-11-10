@@ -107,9 +107,13 @@ namespace Minecraft.Presentation.World
                     TryLoadAndBlitTile(atlas, 1, Path.Combine(blockDir, "bedrock.png"), tileRes, Color.white);
                     TryLoadAndBlitTile(atlas, 2, Path.Combine(blockDir, "stone.png"), tileRes, Color.white);
                     TryLoadAndBlitTile(atlas, 3, Path.Combine(blockDir, "dirt.png"), tileRes, Color.white);
-                    // Mặt cỏ trên đỉnh trong Minecraft là ảnh grayscale, nhân màu xanh lá tự nhiên
-                    TryLoadAndBlitTile(atlas, 4, Path.Combine(blockDir, "grass_block_top.png"), tileRes, new Color(0.48f, 0.78f, 0.32f, 1f));
-                    TryLoadAndBlitTile(atlas, 5, Path.Combine(blockDir, "grass_block_side.png"), tileRes, Color.white);
+                    // Nạp mặt cỏ đỉnh (đã dùng texture cỏ sạch không chữ) với độ sáng tươi tự nhiên
+                    string grassTopPath = File.Exists(Path.Combine(blockDir, "moss_block.png"))
+                        ? Path.Combine(blockDir, "moss_block.png")
+                        : Path.Combine(blockDir, "grass_block_top.png");
+                    TryLoadAndBlitTile(atlas, 4, grassTopPath, tileRes, new Color(1.08f, 1.15f, 0.95f, 1f));
+                    // Ghép mặt cỏ bên hông từ nền đất (dirt.png) và viền cỏ xanh phía trên để loại bỏ màu hồng xám của overlay thô
+                    TryBuildGrassSideTile(atlas, 5, Path.Combine(blockDir, "dirt.png"), grassTopPath, tileRes);
                     TryLoadAndBlitTile(atlas, 6, Path.Combine(blockDir, "oak_log.png"), tileRes, Color.white);
                     TryLoadAndBlitTile(atlas, 7, Path.Combine(blockDir, "oak_log_top.png"), tileRes, Color.white);
                     TryLoadAndBlitTile(atlas, 8, Path.Combine(blockDir, "oak_leaves.png"), tileRes, new Color(0.38f, 0.72f, 0.28f, 1f));
@@ -184,8 +188,27 @@ namespace Minecraft.Presentation.World
                     for (int x = 0; x < tileRes; x++)
                     {
                         float u = (x + 0.5f) / tileRes;
-                        Color c = temp.GetPixelBilinear(u, v) * tint;
-                        c.a = 1f;
+                        Color raw = temp.GetPixelBilinear(u, v);
+                        Color c = new Color(
+                            Mathf.Clamp01(raw.r * tint.r),
+                            Mathf.Clamp01(raw.g * tint.g),
+                            Mathf.Clamp01(raw.b * tint.b),
+                            1f);
+
+                        // Nếu pixel gốc trong suốt (ví dụ khe lá cây), lấp bằng màu nền xanh đậm tự nhiên
+                        if (raw.a < 0.35f)
+                        {
+                            c = new Color(0.16f, 0.34f, 0.12f, 1f);
+                        }
+
+                        // Tạo viền khối 1px nhẹ (Ambient Occlusion giả lập ở mép khối) để tách biệt rõ khối 3D
+                        if (x == 0 || x == tileRes - 1 || y == 0 || y == tileRes - 1)
+                        {
+                            c.r *= 0.86f;
+                            c.g *= 0.86f;
+                            c.b *= 0.86f;
+                        }
+
                         blockPixels[y * tileRes + x] = c;
                     }
                 }
@@ -199,6 +222,79 @@ namespace Minecraft.Presentation.World
             finally
             {
                 Destroy(temp);
+            }
+        }
+
+        private static void TryBuildGrassSideTile(Texture2D atlas, int tileIndex, string dirtPath, string grassTopPath, int tileRes)
+        {
+            if (!File.Exists(dirtPath) || !File.Exists(grassTopPath))
+            {
+                return;
+            }
+
+            Texture2D dirtTex = new Texture2D(2, 2, TextureFormat.RGBA32, mipChain: false);
+            Texture2D grassTex = new Texture2D(2, 2, TextureFormat.RGBA32, mipChain: false);
+            try
+            {
+                if (!ImageConversion.LoadImage(dirtTex, File.ReadAllBytes(dirtPath)) ||
+                    !ImageConversion.LoadImage(grassTex, File.ReadAllBytes(grassTopPath)))
+                {
+                    return;
+                }
+
+                int tileX = tileIndex % AtlasGridSize;
+                int tileY = tileIndex / AtlasGridSize;
+                int startX = tileX * tileRes;
+                int startY = (AtlasGridSize - 1 - tileY) * tileRes;
+
+                Color[] blockPixels = new Color[tileRes * tileRes];
+                for (int y = 0; y < tileRes; y++)
+                {
+                    float v = (y + 0.5f) / tileRes;
+                    for (int x = 0; x < tileRes; x++)
+                    {
+                        float u = (x + 0.5f) / tileRes;
+                        // Tạo đường viền cỏ rủ xuống tự nhiên ở 1/4 phía trên mặt bên (v >= 0.72)
+                        int columnSlot = (x * 16) / tileRes;
+                        float grassRimThreshold = 0.74f - ((columnSlot * 7 + 3) % 5) * 0.03f;
+
+                        Color c;
+                        if (v >= grassRimThreshold)
+                        {
+                            Color g = grassTex.GetPixelBilinear(u, v);
+                            c = new Color(
+                                Mathf.Clamp01(g.r * 1.08f),
+                                Mathf.Clamp01(g.g * 1.15f),
+                                Mathf.Clamp01(g.b * 0.95f),
+                                1f);
+                        }
+                        else
+                        {
+                            Color d = dirtTex.GetPixelBilinear(u, v);
+                            c = new Color(d.r, d.g, d.b, 1f);
+                        }
+
+                        if (x == 0 || x == tileRes - 1 || y == 0 || y == tileRes - 1)
+                        {
+                            c.r *= 0.86f;
+                            c.g *= 0.86f;
+                            c.b *= 0.86f;
+                        }
+
+                        blockPixels[y * tileRes + x] = c;
+                    }
+                }
+
+                atlas.SetPixels(startX, startY, tileRes, tileRes, blockPixels);
+            }
+            catch (Exception)
+            {
+                // Giữ nguyên ô procedural nếu lỗi
+            }
+            finally
+            {
+                Destroy(dirtTex);
+                Destroy(grassTex);
             }
         }
 

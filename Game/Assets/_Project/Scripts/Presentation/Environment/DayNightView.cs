@@ -66,9 +66,20 @@ namespace Minecraft.Presentation.Environment
         {
             if (_sunLight == null) return;
 
-            // Góc quay mặt trời theo trục X từ -90 (mọc) đến 270 (lặn và quay lại)
-            float sunAngle = (normalizedTime * 360f) - 90f;
-            transform.rotation = Quaternion.Euler(sunAngle, 170f, 0f);
+            // Góc chiếu mặt trời luôn hướng từ trên bầu trời xuống mặt đất (35° .. 145° ban ngày)
+            // để mặt Top của các khối Voxel luôn nhận đủ ánh sáng và tạo độ tương phản 3D rõ nét với mặt bên
+            float pitchAngle;
+            if (normalizedTime <= 0.55f)
+            {
+                float dayProgress = normalizedTime / 0.55f;
+                pitchAngle = Mathf.Lerp(38f, 142f, dayProgress);
+            }
+            else
+            {
+                pitchAngle = 55f;
+            }
+
+            transform.rotation = Quaternion.Euler(pitchAngle, -35f, 0f);
         }
 
         private void OnPhaseChanged(DayNightPhase phase)
