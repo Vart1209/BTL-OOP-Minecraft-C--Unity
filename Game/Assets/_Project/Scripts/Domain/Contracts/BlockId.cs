@@ -44,7 +44,37 @@ namespace Minecraft.Domain.Contracts
         CraftingTable = 9,
 
         /// <summary>Đá cuội thu được sau khi khai thác khối Stone.</summary>
-        Cobblestone = 10
+        Cobblestone = 10,
+
+        /// <summary>Quặng than phân bố phổ biến trong lòng đất.</summary>
+        CoalOre = 11,
+
+        /// <summary>Quặng sắt phân bố ở tầng đá trung bình.</summary>
+        IronOre = 12,
+
+        /// <summary>Quặng vàng phân bố ở tầng đá sâu.</summary>
+        GoldOre = 13,
+
+        /// <summary>Quặng kim cương quý hiếm ở sát tầng đá nền.</summary>
+        DiamondOre = 14,
+
+        /// <summary>Khối gạch nung xây dựng công trình.</summary>
+        Bricks = 15,
+
+        /// <summary>Khối kính trong suốt cho phép ánh sáng xuyên qua.</summary>
+        Glass = 16,
+
+        /// <summary>Tủ sách trang trí nội thất (mặt trên/dưới là ván gỗ, mặt bên là kệ sách).</summary>
+        Bookshelf = 17,
+
+        /// <summary>Đá phát sáng (Glowstone) trang trí ban đêm.</summary>
+        Glowstone = 18,
+
+        /// <summary>Khối tuyết trắng phủ trên các đỉnh núi cao.</summary>
+        Snow = 19,
+
+        /// <summary>Khối mặt nước ở các vùng hồ trũng thấp.</summary>
+        Water = 20
     }
 }
 

@@ -94,8 +94,8 @@ namespace Minecraft.Presentation.World
                     name = $"Atlas_{manifest.PackId}_{tileRes}x"
                 };
 
-                // Bước 1: Vẽ sẵn toàn bộ 16 ô (indices 0..15) bằng texture màu sắc đặc trưng của từng loại khối (Procedural Pixel-Art)
-                for (int tileIndex = 0; tileIndex < 16; tileIndex++)
+                // Bước 1: Vẽ sẵn toàn bộ 24 ô (indices 0..23) bằng texture màu sắc đặc trưng của từng loại khối (Procedural Pixel-Art)
+                for (int tileIndex = 0; tileIndex < 24; tileIndex++)
                 {
                     FillProceduralTile(atlas, tileIndex, tileRes);
                 }
@@ -122,6 +122,16 @@ namespace Minecraft.Presentation.World
                     TryLoadAndBlitTile(atlas, 11, Path.Combine(blockDir, "crafting_table_top.png"), tileRes, Color.white);
                     TryLoadAndBlitTile(atlas, 12, Path.Combine(blockDir, "crafting_table_side.png"), tileRes, Color.white);
                     TryLoadAndBlitTile(atlas, 13, Path.Combine(blockDir, "cobblestone.png"), tileRes, Color.white);
+                    TryLoadAndBlitTile(atlas, 14, Path.Combine(blockDir, "coal_ore.png"), tileRes, Color.white);
+                    TryLoadAndBlitTile(atlas, 15, Path.Combine(blockDir, "iron_ore.png"), tileRes, new Color(1.05f, 0.96f, 0.88f, 1f));
+                    TryLoadAndBlitTile(atlas, 16, Path.Combine(blockDir, "gold_ore.png"), tileRes, Color.white);
+                    TryLoadAndBlitTile(atlas, 17, Path.Combine(blockDir, "diamond_ore.png"), tileRes, Color.white);
+                    TryLoadAndBlitTile(atlas, 18, Path.Combine(blockDir, "bricks.png"), tileRes, Color.white);
+                    TryLoadAndBlitTile(atlas, 19, Path.Combine(blockDir, "glass.png"), tileRes, new Color(0.78f, 0.92f, 1.0f, 1f));
+                    TryLoadAndBlitTile(atlas, 20, Path.Combine(blockDir, "bookshelf.png"), tileRes, Color.white);
+                    TryLoadAndBlitTile(atlas, 21, Path.Combine(blockDir, "glowstone.png"), tileRes, Color.white);
+                    TryLoadAndBlitTile(atlas, 22, Path.Combine(blockDir, "snow.png"), tileRes, Color.white);
+                    TryLoadAndBlitTile(atlas, 23, Path.Combine(blockDir, "blue_ice.png"), tileRes, new Color(0.24f, 0.60f, 0.96f, 1f));
                 }
 
                 atlas.Apply(updateMipmaps: false, makeNoLongerReadable: false);
@@ -195,10 +205,12 @@ namespace Minecraft.Presentation.World
                             Mathf.Clamp01(raw.b * tint.b),
                             1f);
 
-                        // Nếu pixel gốc trong suốt (ví dụ khe lá cây), lấp bằng màu nền xanh đậm tự nhiên
+                        // Nếu pixel gốc trong suốt (ví dụ khe lá cây hoặc kính), lấp bằng màu nền phù hợp
                         if (raw.a < 0.35f)
                         {
-                            c = new Color(0.16f, 0.34f, 0.12f, 1f);
+                            c = tileIndex == 19
+                                ? new Color(0.76f, 0.92f, 0.98f, 1f)
+                                : new Color(0.16f, 0.34f, 0.12f, 1f);
                         }
 
                         // Tạo viền khối 1px nhẹ (Ambient Occlusion giả lập ở mép khối) để tách biệt rõ khối 3D
@@ -360,6 +372,16 @@ namespace Minecraft.Presentation.World
                 case 11: return new Color(0.58f, 0.38f, 0.22f, 1f); // Crafting Table Top
                 case 12: return new Color(0.52f, 0.34f, 0.20f, 1f); // Crafting Table Side
                 case 13: return new Color(0.44f, 0.44f, 0.46f, 1f); // Cobblestone
+                case 14: return new Color(0.28f, 0.28f, 0.30f, 1f); // Coal Ore
+                case 15: return new Color(0.64f, 0.56f, 0.50f, 1f); // Iron Ore
+                case 16: return new Color(0.84f, 0.72f, 0.26f, 1f); // Gold Ore
+                case 17: return new Color(0.28f, 0.82f, 0.88f, 1f); // Diamond Ore
+                case 18: return new Color(0.68f, 0.32f, 0.24f, 1f); // Bricks
+                case 19: return new Color(0.76f, 0.92f, 0.98f, 1f); // Glass
+                case 20: return new Color(0.54f, 0.38f, 0.22f, 1f); // Bookshelf
+                case 21: return new Color(0.96f, 0.84f, 0.36f, 1f); // Glowstone
+                case 22: return new Color(0.95f, 0.97f, 0.99f, 1f); // Snow
+                case 23: return new Color(0.20f, 0.52f, 0.92f, 1f); // Water
                 default: return new Color(0.50f, 0.50f, 0.50f, 1f);
             }
         }

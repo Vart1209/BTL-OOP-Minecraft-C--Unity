@@ -94,6 +94,16 @@ namespace Minecraft.Domain.Items
             registry.Register(new BlockItem(ItemId.Planks, "Wood Planks", BlockId.Planks));
             registry.Register(new BlockItem(ItemId.CraftingTable, "Crafting Table", BlockId.CraftingTable));
             registry.Register(new BlockItem(ItemId.Cobblestone, "Cobblestone", BlockId.Cobblestone));
+            registry.Register(new BlockItem(ItemId.CoalOre, "Coal Ore", BlockId.CoalOre));
+            registry.Register(new BlockItem(ItemId.IronOre, "Iron Ore", BlockId.IronOre));
+            registry.Register(new BlockItem(ItemId.GoldOre, "Gold Ore", BlockId.GoldOre));
+            registry.Register(new BlockItem(ItemId.DiamondOre, "Diamond Ore", BlockId.DiamondOre));
+            registry.Register(new BlockItem(ItemId.Bricks, "Bricks", BlockId.Bricks));
+            registry.Register(new BlockItem(ItemId.Glass, "Glass", BlockId.Glass));
+            registry.Register(new BlockItem(ItemId.Bookshelf, "Bookshelf", BlockId.Bookshelf));
+            registry.Register(new BlockItem(ItemId.Glowstone, "Glowstone", BlockId.Glowstone));
+            registry.Register(new BlockItem(ItemId.Snow, "Snow Block", BlockId.Snow));
+            registry.Register(new BlockItem(ItemId.Water, "Water", BlockId.Water));
 
             // 2. Đăng ký nguyên liệu và công cụ (ToolItem: dải ID 100..199)
             // Gậy gỗ (Stick - nguyên liệu thường, MaxStackSize = 64)
@@ -104,6 +114,7 @@ namespace Minecraft.Domain.Items
             registry.Register(new ToolItem(ItemId.StonePickaxe, "Stone Pickaxe", ToolType.Pickaxe, miningSpeedMultiplier: 4.0f, attackDamage: 3));
             registry.Register(new ToolItem(ItemId.WoodenSword, "Wooden Sword", ToolType.Sword, miningSpeedMultiplier: 1.0f, attackDamage: 4));
             registry.Register(new ToolItem(ItemId.WoodenAxe, "Wooden Axe", ToolType.Axe, miningSpeedMultiplier: 2.0f, attackDamage: 3));
+            registry.Register(new ToolItem(ItemId.DiamondPickaxe, "Diamond Pickaxe", ToolType.Pickaxe, miningSpeedMultiplier: 8.0f, attackDamage: 5));
 
             // 3. Đăng ký thức ăn (FoodItem: dải ID 200..299, MaxStackSize = 64)
             registry.Register(new FoodItem(ItemId.Apple, "Apple", hungerRestore: 4, healthRestore: 0));
