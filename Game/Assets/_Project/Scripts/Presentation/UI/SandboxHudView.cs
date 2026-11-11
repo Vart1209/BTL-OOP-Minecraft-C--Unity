@@ -183,6 +183,30 @@ namespace Minecraft.Presentation.UI
                 }
 
                 GUI.backgroundColor = prevBg;
+
+                // Thanh độ bền trực quan cho công cụ (v1.2.0 chuẩn Minecraft 1.12)
+                if (!stack.IsEmpty && stack.Definition is ToolItem && stack.Durability < stack.MaxDurability)
+                {
+                    float durabilityRatio = Mathf.Clamp01((float)stack.Durability / stack.MaxDurability);
+                    Color barColor = durabilityRatio > 0.6f
+                        ? new Color(0.2f, 0.85f, 0.2f, 1f) // Xanh lá
+                        : durabilityRatio > 0.25f
+                            ? new Color(1.0f, 0.75f, 0.1f, 1f) // Vàng
+                            : new Color(0.95f, 0.2f, 0.2f, 1f); // Đỏ
+
+                    float barWidth = 46f;
+                    float barHeight = 4f;
+                    float barX = slotRect.x + 5f;
+                    float barY = slotRect.y + slotRect.height - 7f;
+
+                    Color prevColor = GUI.color;
+                    GUI.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
+                    GUI.DrawTexture(new Rect(barX, barY, barWidth, barHeight), Texture2D.whiteTexture);
+
+                    GUI.color = barColor;
+                    GUI.DrawTexture(new Rect(barX, barY, barWidth * durabilityRatio, barHeight), Texture2D.whiteTexture);
+                    GUI.color = prevColor;
+                }
             }
 
             // 5. Cửa sổ Bàn Chế Tạo & Kho Khối Sáng Tạo (mở bằng phím E hoặc C)
