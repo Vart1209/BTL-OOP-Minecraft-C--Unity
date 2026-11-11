@@ -29,6 +29,7 @@ namespace Minecraft.Application.World
         private readonly IWorldWriter _worldWriter;
         private readonly BlockRegistry _blockRegistry;
         private readonly ItemRegistry _itemRegistry;
+        private readonly Survival.DeathDropService _deathDropService;
 
         /// <summary>
         /// Khởi tạo dịch vụ tương tác khối.
@@ -37,12 +38,14 @@ namespace Minecraft.Application.World
             IWorldReader worldReader,
             IWorldWriter worldWriter,
             BlockRegistry blockRegistry,
-            ItemRegistry itemRegistry)
+            ItemRegistry itemRegistry,
+            Survival.DeathDropService deathDropService = null)
         {
             _worldReader = worldReader ?? throw new ArgumentNullException(nameof(worldReader));
             _worldWriter = worldWriter ?? throw new ArgumentNullException(nameof(worldWriter));
             _blockRegistry = blockRegistry ?? throw new ArgumentNullException(nameof(blockRegistry));
             _itemRegistry = itemRegistry ?? throw new ArgumentNullException(nameof(itemRegistry));
+            _deathDropService = deathDropService;
         }
 
         /// <summary>
@@ -134,7 +137,16 @@ namespace Minecraft.Application.World
                     droppedItem = blockType.DropItemId;
                     if (gameMode.ConsumesItemsOnPlace && _itemRegistry.TryGet(droppedItem, out Item dropItem))
                     {
-                        inventory.AddItem(dropItem, 1);
+                        if (_deathDropService != null)
+                        {
+                            _deathDropService.SpawnDrop(
+                                new System.Numerics.Vector3(targetPos.X + 0.5f, targetPos.Y + 0.3f, targetPos.Z + 0.5f),
+                                new ItemStack(dropItem, 1));
+                        }
+                        else
+                        {
+                            inventory.AddItem(dropItem, 1);
+                        }
                     }
                 }
             }

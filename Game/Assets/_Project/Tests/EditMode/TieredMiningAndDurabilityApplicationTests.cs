@@ -96,5 +96,35 @@ namespace Minecraft.Domain.Tests
             Assert.That(toolBroke, Is.True);
             Assert.That(inventory.GetSlot(0).IsEmpty, Is.True);
         }
+
+        [Test]
+        public void MiningBlock_WithDeathDropServiceConfigured_SpawnsDroppedItemEntity()
+        {
+            Minecraft.Application.Survival.DeathDropService dropService = new Minecraft.Application.Survival.DeathDropService();
+            BlockInteractionService serviceWithDrops = new BlockInteractionService(_world, _world, _blockRegistry, _itemRegistry, dropService);
+
+            BlockPos pos = new BlockPos(2, 5, 2);
+            _world.SetBlock(pos, BlockId.Dirt);
+
+            Inventory inventory = new Inventory();
+            IGameMode survival = new SurvivalMode();
+
+            bool broken = serviceWithDrops.TryBreakBlock(pos, inventory, survival, out ItemId droppedItem, out bool toolBroke);
+
+            Assert.That(broken, Is.True);
+            Assert.That(droppedItem, Is.EqualTo(ItemId.Dirt));
+            // Inventory does not receive it directly yet
+            Assert.That(inventory.CountItem(ItemId.Dirt), Is.EqualTo(0));
+            // But dropService has an active drop
+            Assert.That(dropService.ActiveDrops.Count, Is.EqualTo(1));
+            Assert.That(dropService.ActiveDrops[0].Payload.Definition.Id, Is.EqualTo(ItemId.Dirt));
+
+            // When player steps near and collects drops
+            Minecraft.Domain.Entities.Player player = new Minecraft.Domain.Entities.Player(new System.Numerics.Vector3(2f, 5f, 2f), survival);
+            int collected = dropService.CollectNearbyDrops(player);
+            Assert.That(collected, Is.EqualTo(1));
+            Assert.That(player.Inventory.CountItem(ItemId.Dirt), Is.EqualTo(1));
+            Assert.That(dropService.ActiveDrops.Count, Is.EqualTo(0));
+        }
     }
 }
