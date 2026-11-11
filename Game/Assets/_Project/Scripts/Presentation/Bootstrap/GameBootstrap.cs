@@ -47,6 +47,7 @@ namespace Minecraft.Presentation.Bootstrap
         [SerializeField] private SandboxHudView _hudView;
         [SerializeField] private DayNightView _dayNightView;
         [SerializeField] private AtmosphereFogView _atmosphereFogView;
+        [SerializeField] private VoxelParticleEmitter _particleEmitter;
 
         // Domain Registries & Models
         private BlockRegistry _blockRegistry;
@@ -167,9 +168,14 @@ namespace Minecraft.Presentation.Bootstrap
                 _playerController.Initialize(_player.CurrentGameMode, _player.Inventory);
             }
 
+            if (_particleEmitter == null)
+            {
+                _particleEmitter = GetComponentInChildren<VoxelParticleEmitter>() ?? gameObject.AddComponent<VoxelParticleEmitter>();
+            }
+
             if (_interactionController != null)
             {
-                _interactionController.Initialize(_player, _raycaster, _blockInteractionService, _survivalService, _combatService, _itemRegistry);
+                _interactionController.Initialize(_player, _raycaster, _blockInteractionService, _survivalService, _combatService, _itemRegistry, _particleEmitter, _world);
             }
 
             if (_hudView != null)

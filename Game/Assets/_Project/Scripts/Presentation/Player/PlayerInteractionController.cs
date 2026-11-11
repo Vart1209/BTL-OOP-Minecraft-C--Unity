@@ -9,6 +9,7 @@ using Minecraft.Domain.Entities.Mobs;
 using Minecraft.Domain.Items;
 using Minecraft.Domain.World;
 using Minecraft.Presentation.Mobs;
+using Minecraft.Presentation.World;
 
 namespace Minecraft.Presentation.Player
 {
@@ -34,6 +35,8 @@ namespace Minecraft.Presentation.Player
         private SurvivalService _survivalService;
         private MobCombatService _combatService;
         private ItemRegistry _itemRegistry;
+        private VoxelParticleEmitter _particleEmitter;
+        private IWorldReader _worldReader;
         private FirstPersonPlayerController _fpsController;
 
         private VoxelRaycastHit _currentHit;
@@ -66,7 +69,9 @@ namespace Minecraft.Presentation.Player
             BlockInteractionService blockInteractionService,
             SurvivalService survivalService,
             MobCombatService combatService = null,
-            ItemRegistry itemRegistry = null)
+            ItemRegistry itemRegistry = null,
+            VoxelParticleEmitter particleEmitter = null,
+            IWorldReader worldReader = null)
         {
             _player = player ?? throw new ArgumentNullException(nameof(player));
             _raycaster = raycaster ?? throw new ArgumentNullException(nameof(raycaster));
@@ -74,6 +79,8 @@ namespace Minecraft.Presentation.Player
             _survivalService = survivalService ?? throw new ArgumentNullException(nameof(survivalService));
             _combatService = combatService;
             _itemRegistry = itemRegistry;
+            _particleEmitter = particleEmitter;
+            _worldReader = worldReader;
         }
 
         private void CreateBlockHighlightWireframe()
@@ -190,7 +197,22 @@ namespace Minecraft.Presentation.Player
 
                 if (_currentHit.IsHit)
                 {
-                    _blockInteractionService.TryBreakBlock(_currentHit.BlockPosition, _player.Inventory, _player.CurrentGameMode);
+                    BlockPos targetPos = _currentHit.BlockPosition;
+                    BlockId targetBlock = _worldReader != null ? _worldReader.GetBlock(targetPos) : BlockId.Stone;
+
+                    bool broken = _blockInteractionService.TryBreakBlock(
+                        targetPos,
+                        _player.Inventory,
+                        _player.CurrentGameMode,
+                        out ItemId droppedItem,
+                        out bool toolBroke);
+
+                    if (broken && _particleEmitter != null && targetBlock != BlockId.Air)
+                    {
+                        Vector3 center = new Vector3(targetPos.X + 0.5f, targetPos.Y + 0.5f, targetPos.Z + 0.5f);
+                        Color blockColor = ResourcePackView.GetBlockColor(targetBlock);
+                        _particleEmitter.SpawnBreakParticles(center, blockColor);
+                    }
                 }
             }
 
