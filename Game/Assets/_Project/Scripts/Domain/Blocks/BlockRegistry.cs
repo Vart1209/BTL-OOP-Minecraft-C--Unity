@@ -114,7 +114,8 @@ namespace Minecraft.Domain.Blocks
                 dropItemId: ItemId.Cobblestone,
                 topTextureIndex: 2,
                 bottomTextureIndex: 2,
-                sideTextureIndex: 2
+                sideTextureIndex: 2,
+                requiredToolTier: ToolTier.Wood
             ));
 
             // Dirt
@@ -218,7 +219,8 @@ namespace Minecraft.Domain.Blocks
                 dropItemId: ItemId.Cobblestone,
                 topTextureIndex: 13,
                 bottomTextureIndex: 13,
-                sideTextureIndex: 13
+                sideTextureIndex: 13,
+                requiredToolTier: ToolTier.Wood
             ));
 
             // Coal Ore (Quặng than)
@@ -231,7 +233,8 @@ namespace Minecraft.Domain.Blocks
                 dropItemId: ItemId.CoalOre,
                 topTextureIndex: 14,
                 bottomTextureIndex: 14,
-                sideTextureIndex: 14
+                sideTextureIndex: 14,
+                requiredToolTier: ToolTier.Wood
             ));
 
             // Iron Ore (Quặng sắt)
@@ -244,7 +247,8 @@ namespace Minecraft.Domain.Blocks
                 dropItemId: ItemId.IronOre,
                 topTextureIndex: 15,
                 bottomTextureIndex: 15,
-                sideTextureIndex: 15
+                sideTextureIndex: 15,
+                requiredToolTier: ToolTier.Stone
             ));
 
             // Gold Ore (Quặng vàng)
@@ -257,7 +261,8 @@ namespace Minecraft.Domain.Blocks
                 dropItemId: ItemId.GoldOre,
                 topTextureIndex: 16,
                 bottomTextureIndex: 16,
-                sideTextureIndex: 16
+                sideTextureIndex: 16,
+                requiredToolTier: ToolTier.Iron
             ));
 
             // Diamond Ore (Quặng kim cương)
@@ -270,7 +275,8 @@ namespace Minecraft.Domain.Blocks
                 dropItemId: ItemId.DiamondOre,
                 topTextureIndex: 17,
                 bottomTextureIndex: 17,
-                sideTextureIndex: 17
+                sideTextureIndex: 17,
+                requiredToolTier: ToolTier.Iron
             ));
 
             // Bricks (Gạch đỏ)

@@ -29,6 +29,7 @@ namespace Minecraft.Application.World
         private readonly IWorldWriter _worldWriter;
         private readonly BlockRegistry _blockRegistry;
         private readonly ItemRegistry _itemRegistry;
+        private readonly Survival.DeathDropService _deathDropService;
 
         /// <summary>
         /// Khởi tạo dịch vụ tương tác khối.
@@ -37,12 +38,14 @@ namespace Minecraft.Application.World
             IWorldReader worldReader,
             IWorldWriter worldWriter,
             BlockRegistry blockRegistry,
-            ItemRegistry itemRegistry)
+            ItemRegistry itemRegistry,
+            Survival.DeathDropService deathDropService = null)
         {
             _worldReader = worldReader ?? throw new ArgumentNullException(nameof(worldReader));
             _worldWriter = worldWriter ?? throw new ArgumentNullException(nameof(worldWriter));
             _blockRegistry = blockRegistry ?? throw new ArgumentNullException(nameof(blockRegistry));
             _itemRegistry = itemRegistry ?? throw new ArgumentNullException(nameof(itemRegistry));
+            _deathDropService = deathDropService;
         }
 
         /// <summary>
@@ -54,6 +57,28 @@ namespace Minecraft.Application.World
         /// <returns><c>true</c> nếu phá khối thành công; ngược lại <c>false</c>.</returns>
         public bool TryBreakBlock(BlockPos targetPos, Inventory inventory, IGameMode gameMode)
         {
+            return TryBreakBlock(targetPos, inventory, gameMode, out _, out _);
+        }
+
+        /// <summary>
+        /// Xử lý hành vi phá hủy một khối với phân cấp công cụ và hao mòn độ bền (Use Case UC03, v1.2.0).
+        /// </summary>
+        /// <param name="targetPos">Tọa độ khối mục tiêu cần phá.</param>
+        /// <param name="inventory">Túi đồ của người chơi.</param>
+        /// <param name="gameMode">Chế độ chơi hiện tại.</param>
+        /// <param name="droppedItem">Mã vật phẩm được thu hoạch/rơi ra (None nếu không đủ cấp bậc công cụ).</param>
+        /// <param name="toolBroke">Đánh dấu công cụ trên tay có bị vỡ do hết độ bền hay không.</param>
+        /// <returns><c>true</c> nếu phá khối thành công; ngược lại <c>false</c>.</returns>
+        public bool TryBreakBlock(
+            BlockPos targetPos,
+            Inventory inventory,
+            IGameMode gameMode,
+            out ItemId droppedItem,
+            out bool toolBroke)
+        {
+            droppedItem = ItemId.None;
+            toolBroke = false;
+
             if (inventory == null)
             {
                 throw new ArgumentNullException(nameof(inventory));
@@ -89,12 +114,50 @@ namespace Minecraft.Application.World
                 return false;
             }
 
-            // Quy tắc R5: Rơi vật phẩm vào túi đồ ở chế độ Survival
-            if (gameMode.ConsumesItemsOnPlace && _blockRegistry.TryGet(currentBlock, out BlockType blockType))
+            ItemStack held = inventory.GetSelectedSlot();
+
+            // Xác định vật phẩm rơi dựa theo Tiered Mining
+            if (_blockRegistry.TryGet(currentBlock, out BlockType blockType))
             {
-                if (blockType.DropItemId != ItemId.None && _itemRegistry.TryGet(blockType.DropItemId, out Item dropItem))
+                bool canHarvest = true;
+                if (blockType.RequiredToolTier > ToolTier.Hand)
                 {
-                    inventory.AddItem(dropItem, 1);
+                    if (held != null && !held.IsEmpty && held.Definition is ToolItem tool)
+                    {
+                        canHarvest = tool.ToolCategory == ToolType.Pickaxe && tool.Tier >= blockType.RequiredToolTier;
+                    }
+                    else
+                    {
+                        canHarvest = false;
+                    }
+                }
+
+                if (canHarvest && blockType.DropItemId != ItemId.None)
+                {
+                    droppedItem = blockType.DropItemId;
+                    if (gameMode.ConsumesItemsOnPlace && _itemRegistry.TryGet(droppedItem, out Item dropItem))
+                    {
+                        if (_deathDropService != null)
+                        {
+                            _deathDropService.SpawnDrop(
+                                new System.Numerics.Vector3(targetPos.X + 0.5f, targetPos.Y + 0.3f, targetPos.Z + 0.5f),
+                                new ItemStack(dropItem, 1));
+                        }
+                        else
+                        {
+                            inventory.AddItem(dropItem, 1);
+                        }
+                    }
+                }
+            }
+
+            // Trừ độ bền công cụ ở chế độ Survival
+            if (gameMode.ConsumesItemsOnPlace && held != null && !held.IsEmpty && held.Definition is ToolItem)
+            {
+                held.TryDamageTool(1, out toolBroke);
+                if (toolBroke)
+                {
+                    inventory.SetSlot(inventory.SelectedHotbarIndex, ItemStack.Empty);
                 }
             }
 

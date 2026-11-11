@@ -355,6 +355,37 @@ namespace Minecraft.Presentation.World
             atlas.SetPixels(startX, startY, tileRes, tileRes, pixels);
         }
 
+        /// <summary>
+        /// Lấy màu sắc đặc trưng đại diện của một khối theo mã định danh khối (dùng cho hiệu ứng hạt vỡ khối, rơi đồ, UI).
+        /// </summary>
+        public static Color GetBlockColor(BlockId blockId)
+        {
+            switch (blockId)
+            {
+                case BlockId.Bedrock: return new Color(0.22f, 0.22f, 0.24f, 1f);
+                case BlockId.Stone: return new Color(0.52f, 0.53f, 0.55f, 1f);
+                case BlockId.Dirt: return new Color(0.54f, 0.37f, 0.23f, 1f);
+                case BlockId.Grass: return new Color(0.36f, 0.72f, 0.24f, 1f);
+                case BlockId.Wood: return new Color(0.42f, 0.30f, 0.18f, 1f);
+                case BlockId.Leaves: return new Color(0.24f, 0.56f, 0.20f, 1f);
+                case BlockId.Sand: return new Color(0.86f, 0.82f, 0.58f, 1f);
+                case BlockId.Planks: return new Color(0.66f, 0.50f, 0.30f, 1f);
+                case BlockId.CraftingTable: return new Color(0.58f, 0.38f, 0.22f, 1f);
+                case BlockId.Cobblestone: return new Color(0.44f, 0.44f, 0.46f, 1f);
+                case BlockId.CoalOre: return new Color(0.28f, 0.28f, 0.30f, 1f);
+                case BlockId.IronOre: return new Color(0.64f, 0.56f, 0.50f, 1f);
+                case BlockId.GoldOre: return new Color(0.84f, 0.72f, 0.26f, 1f);
+                case BlockId.DiamondOre: return new Color(0.28f, 0.82f, 0.88f, 1f);
+                case BlockId.Bricks: return new Color(0.68f, 0.32f, 0.24f, 1f);
+                case BlockId.Glass: return new Color(0.76f, 0.92f, 0.98f, 0.7f);
+                case BlockId.Bookshelf: return new Color(0.54f, 0.38f, 0.22f, 1f);
+                case BlockId.Glowstone: return new Color(0.96f, 0.84f, 0.36f, 1f);
+                case BlockId.Snow: return new Color(0.95f, 0.97f, 0.99f, 1f);
+                case BlockId.Water: return new Color(0.20f, 0.52f, 0.92f, 0.75f);
+                default: return new Color(0.50f, 0.50f, 0.50f, 1f);
+            }
+        }
+
         private static Color GetProceduralBaseColor(int tileIndex)
         {
             switch (tileIndex)

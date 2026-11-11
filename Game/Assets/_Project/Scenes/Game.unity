@@ -291,7 +291,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Minecraft.Presentation::Minecraft.Presentation.Player.FirstPersonPlayerController
   _walkSpeed: 4.5
-  _jumpForce: 6
+  _jumpForce: 5
   _flySpeed: 10
   _gravity: -9.81
   _cameraTransform: {fileID: 1958976839}

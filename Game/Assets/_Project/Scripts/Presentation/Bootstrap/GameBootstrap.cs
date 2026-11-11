@@ -47,6 +47,7 @@ namespace Minecraft.Presentation.Bootstrap
         [SerializeField] private SandboxHudView _hudView;
         [SerializeField] private DayNightView _dayNightView;
         [SerializeField] private AtmosphereFogView _atmosphereFogView;
+        [SerializeField] private VoxelParticleEmitter _particleEmitter;
 
         // Domain Registries & Models
         private BlockRegistry _blockRegistry;
@@ -106,10 +107,10 @@ namespace Minecraft.Presentation.Bootstrap
             // 5. Khởi tạo các dịch vụ điều phối Use Case (Application Services)
             int renderDistance = Mathf.Clamp(config.World.RenderDistanceInChunks, 2, 6);
             _chunkLoadService = new ChunkLoadService(_world, renderDistance);
-            _blockInteractionService = new BlockInteractionService(_world, _world, _blockRegistry, _itemRegistry);
+            _deathDropService = new DeathDropService();
+            _blockInteractionService = new BlockInteractionService(_world, _world, _blockRegistry, _itemRegistry, _deathDropService);
             _craftingService = new CraftingService(_itemRegistry);
             _survivalService = new SurvivalService();
-            _deathDropService = new DeathDropService();
             _combatService = new MobCombatService(attackRange: 2.0f);
             _gameModeService = new GameModeService();
 
@@ -167,9 +168,14 @@ namespace Minecraft.Presentation.Bootstrap
                 _playerController.Initialize(_player.CurrentGameMode, _player.Inventory);
             }
 
+            if (_particleEmitter == null)
+            {
+                _particleEmitter = GetComponentInChildren<VoxelParticleEmitter>() ?? gameObject.AddComponent<VoxelParticleEmitter>();
+            }
+
             if (_interactionController != null)
             {
-                _interactionController.Initialize(_player, _raycaster, _blockInteractionService, _survivalService, _combatService, _itemRegistry);
+                _interactionController.Initialize(_player, _raycaster, _blockInteractionService, _survivalService, _combatService, _itemRegistry, _particleEmitter, _world);
             }
 
             if (_hudView != null)
@@ -275,6 +281,59 @@ namespace Minecraft.Presentation.Bootstrap
             }
         }
 
+        private readonly Dictionary<DroppedItemEntity, DroppedItemView> _droppedItemViews = new Dictionary<DroppedItemEntity, DroppedItemView>();
+
+        private void SyncDroppedItemViews()
+        {
+            if (_deathDropService == null)
+            {
+                return;
+            }
+
+            IReadOnlyList<DroppedItemEntity> activeDrops = _deathDropService.ActiveDrops;
+
+            // 1. Tạo mới View cho các dropped entity chưa có View
+            for (int i = 0; i < activeDrops.Count; i++)
+            {
+                DroppedItemEntity drop = activeDrops[i];
+                if (drop == null || !drop.IsAlive || drop.IsExpired || drop.Payload.IsEmpty)
+                {
+                    continue;
+                }
+
+                if (!_droppedItemViews.ContainsKey(drop))
+                {
+                    GameObject dropObj = new GameObject($"Dropped_{drop.Payload.Definition.Name}");
+                    dropObj.transform.SetParent(transform, true);
+                    DroppedItemView view = dropObj.AddComponent<DroppedItemView>();
+                    Transform playerT = _playerController != null ? _playerController.transform : transform;
+                    view.Initialize(drop, playerT);
+                    _droppedItemViews[drop] = view;
+                }
+            }
+
+            // 2. Dọn dẹp các entity đã hết hạn hoặc đã thu nhặt
+            List<DroppedItemEntity> toRemove = null;
+            foreach (var kvp in _droppedItemViews)
+            {
+                DroppedItemEntity drop = kvp.Key;
+                DroppedItemView view = kvp.Value;
+                if (!drop.IsAlive || drop.IsExpired || drop.Payload.IsEmpty || view == null)
+                {
+                    if (toRemove == null) toRemove = new List<DroppedItemEntity>();
+                    toRemove.Add(drop);
+                }
+            }
+
+            if (toRemove != null)
+            {
+                for (int i = 0; i < toRemove.Count; i++)
+                {
+                    _droppedItemViews.Remove(toRemove[i]);
+                }
+            }
+        }
+
         private void Update()
         {
             float dt = Time.deltaTime;
@@ -283,6 +342,7 @@ namespace Minecraft.Presentation.Bootstrap
             _dayNightCycle?.Tick(dt);
             _survivalService?.TickPlayerSurvival(_player, dt);
             _deathDropService?.Tick(dt);
+            SyncDroppedItemViews();
             _deathDropService?.CollectNearbyDrops(_player, DeathDropService.DefaultPickupRadius);
 
             bool isTargetable = _player.CurrentGameMode.CanTakeDamage;

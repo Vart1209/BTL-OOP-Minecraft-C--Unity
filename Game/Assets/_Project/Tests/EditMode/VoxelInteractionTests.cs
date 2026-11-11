@@ -114,8 +114,9 @@ namespace Minecraft.Domain.Tests
             Assert.That(breakBedrockCreative, Is.True);
             Assert.That(world.GetBlock(new BlockPos(0, 0, 0)), Is.EqualTo(BlockId.Air));
 
-            // 3. Quy tắc R5: Phá Stone rơi Cobblestone vào Inventory ở Survival
+            // 3. Quy tắc R5: Phá Stone rơi Cobblestone vào Inventory ở Survival (cần có cúp gỗ trở lên theo phân cấp khai thác)
             world.SetBlock(new BlockPos(5, 5, 5), BlockId.Stone);
+            inventory.AddItem(itemRegistry.Get(ItemId.WoodenPickaxe), 1);
             bool breakStone = service.TryBreakBlock(new BlockPos(5, 5, 5), inventory, survivalMode);
             Assert.That(breakStone, Is.True);
             Assert.That(world.GetBlock(new BlockPos(5, 5, 5)), Is.EqualTo(BlockId.Air));

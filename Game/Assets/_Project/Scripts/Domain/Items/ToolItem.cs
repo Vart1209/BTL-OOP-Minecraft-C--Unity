@@ -20,9 +20,17 @@ namespace Minecraft.Domain.Items
         private readonly ToolType _toolCategory;
         private readonly float _miningSpeedMultiplier;
         private readonly int _attackDamage;
+        private readonly ToolTier _tier;
+        private readonly int _maxDurability;
 
         /// <summary>Chủng loại công cụ.</summary>
         public ToolType ToolCategory => _toolCategory;
+
+        /// <summary>Cấp bậc chất liệu của công cụ (Tier 1..4).</summary>
+        public ToolTier Tier => _tier;
+
+        /// <summary>Độ bền tối đa của công cụ trước khi bị gãy nát.</summary>
+        public int MaxDurability => _maxDurability;
 
         /// <summary>Hệ số nhân tốc độ khai thác khối tương thích (> 0).</summary>
         public float MiningSpeedMultiplier => _miningSpeedMultiplier;
@@ -31,14 +39,16 @@ namespace Minecraft.Domain.Items
         public int AttackDamage => _attackDamage;
 
         /// <summary>
-        /// Khởi tạo một công cụ.
+        /// Khởi tạo một công cụ với cấp bậc và độ bền xác định.
         /// </summary>
         public ToolItem(
             ItemId id,
             string name,
             ToolType toolCategory,
             float miningSpeedMultiplier,
-            int attackDamage)
+            int attackDamage,
+            ToolTier tier = ToolTier.Wood,
+            int maxDurability = 59)
             : base(id, name, maxStackSize: 1)
         {
             if (miningSpeedMultiplier <= 0f)
@@ -51,9 +61,16 @@ namespace Minecraft.Domain.Items
                 throw new ArgumentOutOfRangeException(nameof(attackDamage), "Sát thương tấn công phải >= 1.");
             }
 
+            if (maxDurability < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxDurability), "Độ bền tối đa phải >= 1.");
+            }
+
             _toolCategory = toolCategory;
             _miningSpeedMultiplier = miningSpeedMultiplier;
             _attackDamage = attackDamage;
+            _tier = tier;
+            _maxDurability = maxDurability;
         }
 
         /// <summary>

@@ -5,6 +5,33 @@ Tất cả các thay đổi của dự án được AI và các thành viên ghi
 
 ---
 
+## [v1.2.0] - 2026-11-11 07:58 (+07:00) — Tactile Gameplay: Hiệu ứng Hạt vỡ khối (Voxel Particles), Vật phẩm 3D rơi lơ lửng & Hút nam châm, Phân cấp khai thác quặng (Tiered Mining) và Thanh độ bền công cụ trực quan
+- **Loại cập nhật:** Minor
+- **Phân hệ:** World (A) & Survival (B) & Presentation (Shared)
+- **Thêm mới (Added):**
+  - `Game/Assets/_Project/Scripts/Domain/Contracts/ToolTier.cs` — Enum phân cấp cấp bậc công cụ (`Hand = 0, Wood = 1, Stone = 2, Iron = 3, Diamond = 4`).
+  - `Game/Assets/_Project/Scripts/Presentation/World/VoxelParticleEmitter.cs` — Bộ phát hạt mảnh vụn voxel vỡ khối (~16 khối mini 0.08m) bung theo hình nón ngược, gia tốc trọng lực và dọn dẹp sau 0.65s không gây rác bộ nhớ hay lag PhysX.
+  - `Game/Assets/_Project/Scripts/Presentation/World/DroppedItemView.cs` — Thực thể hiển thị vật phẩm 3D thu nhỏ (0.28m) xoay đều quanh trục Y, nhấp nhô sóng Sin trên mặt đất và kích hoạt lực hút nam châm gia tốc lao về phía ngực người chơi khi ở cự ly gần (< 2.2m).
+  - `Game/Assets/_Project/Tests/EditMode/ToolDurabilityAndTierDomainTests.cs` — Bộ kiểm thử tự động kiểm tra khởi tạo cấp bậc công cụ, độ bền tối đa và cơ chế trừ độ bền đến khi gãy.
+  - `Game/Assets/_Project/Tests/EditMode/TieredMiningAndDurabilityApplicationTests.cs` — Bộ kiểm thử Use Case kiểm tra đào quặng bằng tay không không rơi quặng, đào đúng cấp cúp rơi quặng và trừ 1 độ bền, gãy cúp xóa ô Hotbar và sinh DroppedItemEntity qua DeathDropService.
+- **Chỉnh sửa (Changed):**
+  - `Game/Assets/_Project/Scripts/Domain/Items/ToolItem.cs` & `ItemStack.cs` — Mở rộng độ bền tối đa chuẩn 1.12 (Cúp gỗ: 59, Cúp đá: 131, Cúp kim cương: 1561) và phương thức `TryDamageTool(int damage, out bool isBroken)` đóng gói an toàn.
+  - `Game/Assets/_Project/Scripts/Domain/Blocks/BlockType.cs` & `BlockRegistry.cs` — Bổ sung `RequiredToolTier` cho từng loại khối (`Stone`/`CoalOre`: Wood; `IronOre`: Stone; `GoldOre`/`DiamondOre`: Iron).
+  - `Game/Assets/_Project/Scripts/Application/World/BlockInteractionService.cs` — Triển khai logic phân cấp khai thác quặng: sai công cụ/thiếu cấp bậc phá khối thành Air nhưng không rơi quặng; trừ độ bền công cụ khi phá khối; liên kết tiêm phụ thuộc với `DeathDropService` để sinh vật phẩm rơi 3D.
+  - `Game/Assets/_Project/Scripts/Presentation/Player/PlayerInteractionController.cs` — Kích hoạt phát sinh hạt vỡ khối qua `VoxelParticleEmitter` lấy màu đặc trưng của từng khối từ `ResourcePackView`.
+  - `Game/Assets/_Project/Scripts/Presentation/World/ResourcePackView.cs` — Bổ sung phương thức tĩnh `GetBlockColor(BlockId)` lấy mã màu RGB chuẩn xác đại diện cho từng loại khối.
+  - `Game/Assets/_Project/Scripts/Presentation/Bootstrap/GameBootstrap.cs` — Tiêm phụ thuộc `DeathDropService` vào `BlockInteractionService`, đồng bộ danh sách `DroppedItemView` với `ActiveDrops`, và khởi tạo `VoxelParticleEmitter`.
+  - `Game/Assets/_Project/Scripts/Presentation/UI/SandboxHudView.cs` — Vẽ thanh độ bền mỏng 46px x 4px trực quan dưới đáy ô Hotbar khi công cụ bị hao mòn (Xanh lá `> 60%` ➔ Vàng `> 25%` ➔ Đỏ `≤ 25%`).
+- **Xóa bỏ (Removed):**
+  - Không
+- **Giải thích OOP / AI (dùng khi vấn đáp):**
+  - **Liskov Substitution Principle (LSP - Tiêu chí 14):** `ToolItem` kế thừa `Item`, ghi đè các thuộc tính `MaxDurability` và `Tier`. Hệ thống túi đồ xử lý `Item` trừu tượng mà không bị vỡ logic.
+  - **Single Responsibility Principle (SRP - Tiêu chí 8):** Phân tách độc lập giữa dữ liệu thực thể vật phẩm rơi (`DroppedItemEntity` trong Domain/Application) và hiển thị 3D xoay nhấp nhô / hút nam châm trên Unity (`DroppedItemView` trong Presentation).
+  - **Đóng gói dữ liệu (Encapsulation - Tiêu chí 13):** Trường `_durability` trong `ItemStack` là `private readonly/encapsulated`, chỉ có thể biến đổi qua phương thức nghiệp vụ `TryDamageTool` kiểm tra biên hợp lệ.
+  - **Dependency Injection (Tiêu chí 2):** Khởi tạo và tiêm `DeathDropService` vào `BlockInteractionService` qua constructor tại `GameBootstrap`, tuân thủ nguyên tắc không dùng Singleton toàn cục.
+
+---
+
 ## [v1.1.0] - 2026-11-10 23:20 (+07:00) — Big Update: Quần xã Cây sồi 3D, Hồ nước, Đỉnh tuyết, Mỏ quặng, 20 loại Block, Mob 3D, Khung chọn khối & HUD mở rộng
 - **Loại cập nhật:** Minor
 - **Phân hệ:** World (A) & Survival (B) & Presentation (Shared)

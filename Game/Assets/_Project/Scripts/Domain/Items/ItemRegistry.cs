@@ -110,11 +110,11 @@ namespace Minecraft.Domain.Items
             registry.Register(new BlockItem(ItemId.Stick, "Stick", BlockId.Air)); // Stick dùng cơ chế stack 64
 
             // Công cụ chuyên dụng (MaxStackSize = 1)
-            registry.Register(new ToolItem(ItemId.WoodenPickaxe, "Wooden Pickaxe", ToolType.Pickaxe, miningSpeedMultiplier: 2.0f, attackDamage: 2));
-            registry.Register(new ToolItem(ItemId.StonePickaxe, "Stone Pickaxe", ToolType.Pickaxe, miningSpeedMultiplier: 4.0f, attackDamage: 3));
-            registry.Register(new ToolItem(ItemId.WoodenSword, "Wooden Sword", ToolType.Sword, miningSpeedMultiplier: 1.0f, attackDamage: 4));
-            registry.Register(new ToolItem(ItemId.WoodenAxe, "Wooden Axe", ToolType.Axe, miningSpeedMultiplier: 2.0f, attackDamage: 3));
-            registry.Register(new ToolItem(ItemId.DiamondPickaxe, "Diamond Pickaxe", ToolType.Pickaxe, miningSpeedMultiplier: 8.0f, attackDamage: 5));
+            registry.Register(new ToolItem(ItemId.WoodenPickaxe, "Wooden Pickaxe", ToolType.Pickaxe, miningSpeedMultiplier: 2.0f, attackDamage: 2, tier: ToolTier.Wood, maxDurability: 59));
+            registry.Register(new ToolItem(ItemId.StonePickaxe, "Stone Pickaxe", ToolType.Pickaxe, miningSpeedMultiplier: 4.0f, attackDamage: 3, tier: ToolTier.Stone, maxDurability: 131));
+            registry.Register(new ToolItem(ItemId.WoodenSword, "Wooden Sword", ToolType.Sword, miningSpeedMultiplier: 1.0f, attackDamage: 4, tier: ToolTier.Wood, maxDurability: 59));
+            registry.Register(new ToolItem(ItemId.WoodenAxe, "Wooden Axe", ToolType.Axe, miningSpeedMultiplier: 2.0f, attackDamage: 3, tier: ToolTier.Wood, maxDurability: 59));
+            registry.Register(new ToolItem(ItemId.DiamondPickaxe, "Diamond Pickaxe", ToolType.Pickaxe, miningSpeedMultiplier: 8.0f, attackDamage: 5, tier: ToolTier.Diamond, maxDurability: 1561));
 
             // 3. Đăng ký thức ăn (FoodItem: dải ID 200..299, MaxStackSize = 64)
             registry.Register(new FoodItem(ItemId.Apple, "Apple", hungerRestore: 4, healthRestore: 0));
