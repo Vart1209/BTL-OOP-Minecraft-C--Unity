@@ -17,6 +17,7 @@ namespace Minecraft.Domain.Items
     {
         private readonly Item _definition;
         private int _count;
+        private int _durability;
 
         /// <summary>Định nghĩa thuộc tính vật phẩm được chứa trong ngăn xếp.</summary>
         public Item Definition => _definition;
@@ -27,6 +28,12 @@ namespace Minecraft.Domain.Items
         /// <summary>Số lượng vật phẩm hiện có trong ngăn xếp.</summary>
         public int Count => _count;
 
+        /// <summary>Độ bền hiện tại của công cụ (bằng 0 nếu là vật phẩm thông thường hoặc đã gãy).</summary>
+        public int Durability => _durability;
+
+        /// <summary>Độ bền tối đa của công cụ (bằng 0 nếu không phải công cụ).</summary>
+        public int MaxDurability => _definition is ToolItem tool ? tool.MaxDurability : 0;
+
         /// <summary>Ngăn xếp có đang trống (rỗng) hay không.</summary>
         public bool IsEmpty => _count <= 0 || _definition == null;
 
@@ -34,16 +41,18 @@ namespace Minecraft.Domain.Items
         public static ItemStack Empty => new ItemStack(null, 0);
 
         /// <summary>
-        /// Khởi tạo một ngăn xếp vật phẩm.
+        /// Khởi tạo một ngăn xếp vật phẩm kèm độ bền tùy chọn cho công cụ.
         /// </summary>
         /// <param name="definition">Định nghĩa loại vật phẩm.</param>
         /// <param name="count">Số lượng ban đầu.</param>
-        public ItemStack(Item definition, int count)
+        /// <param name="currentDurability">Độ bền hiện tại (mặc định nạp tối đa nếu là ToolItem).</param>
+        public ItemStack(Item definition, int count, int currentDurability = -1)
         {
             if (definition == null || count <= 0)
             {
                 _definition = null;
                 _count = 0;
+                _durability = 0;
                 return;
             }
 
@@ -54,6 +63,48 @@ namespace Minecraft.Domain.Items
 
             _definition = definition;
             _count = count;
+
+            if (_definition is ToolItem tool)
+            {
+                _durability = (currentDurability >= 0 && currentDurability <= tool.MaxDurability)
+                    ? currentDurability
+                    : tool.MaxDurability;
+            }
+            else
+            {
+                _durability = 0;
+            }
+        }
+
+        /// <summary>
+        /// Gây hao mòn độ bền cho công cụ trong ngăn xếp (Quy tắc độ bền Minecraft 1.12).
+        /// </summary>
+        /// <param name="damageAmount">Số điểm độ bền bị trừ.</param>
+        /// <param name="isBroken">Đánh dấu công cụ đã cạn độ bền và gãy nát hay chưa.</param>
+        /// <returns><c>true</c> nếu vật phẩm là công cụ và đã trừ độ bền thành công; ngược lại <c>false</c>.</returns>
+        public bool TryDamageTool(int damageAmount, out bool isBroken)
+        {
+            isBroken = false;
+            if (!(_definition is ToolItem) || IsEmpty)
+            {
+                return false;
+            }
+
+            if (damageAmount <= 0)
+            {
+                return true;
+            }
+
+            _durability -= damageAmount;
+            if (_durability <= 0)
+            {
+                _durability = 0;
+                _count = 0;
+                isBroken = true;
+                return true;
+            }
+
+            return true;
         }
 
         /// <summary>

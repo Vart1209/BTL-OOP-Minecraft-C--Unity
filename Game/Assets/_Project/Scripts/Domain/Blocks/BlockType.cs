@@ -25,6 +25,7 @@ namespace Minecraft.Domain.Blocks
         private readonly int _topTextureIndex;
         private readonly int _bottomTextureIndex;
         private readonly int _sideTextureIndex;
+        private readonly ToolTier _requiredToolTier;
 
         /// <summary>Mã định danh của khối.</summary>
         public BlockId Id => _id;
@@ -37,6 +38,9 @@ namespace Minecraft.Domain.Blocks
 
         /// <summary>Khối có trong suốt hay không (khối trong suốt không cản ánh sáng và không culling mặt kề).</summary>
         public bool IsTransparent => _isTransparent;
+
+        /// <summary>Cấp độ công cụ tối thiểu cần thiết để thu hoạch được vật phẩm khi phá khối.</summary>
+        public ToolTier RequiredToolTier => _requiredToolTier;
 
         /// <summary>
         /// Độ cứng của khối dùng để tính thời gian đào (Quy tắc R4).
@@ -68,7 +72,8 @@ namespace Minecraft.Domain.Blocks
             ItemId dropItemId,
             int topTextureIndex,
             int bottomTextureIndex,
-            int sideTextureIndex)
+            int sideTextureIndex,
+            ToolTier requiredToolTier = ToolTier.Hand)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -89,6 +94,7 @@ namespace Minecraft.Domain.Blocks
             _topTextureIndex = topTextureIndex;
             _bottomTextureIndex = bottomTextureIndex;
             _sideTextureIndex = sideTextureIndex;
+            _requiredToolTier = requiredToolTier;
         }
 
         /// <summary>
